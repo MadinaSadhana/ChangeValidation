@@ -259,7 +259,11 @@ export default function Analytics() {
                     <XAxis dataKey="name" />
                     <YAxis />
                     <Tooltip />
-                    <Bar dataKey="value" fill="#3b82f6" />
+                    <Bar dataKey="value" radius={[4, 4, 0, 0]}>
+                      {data.priorityDistribution.map((entry, index) => (
+                        <Cell key={`cell-${index}`} fill={entry.color} />
+                      ))}
+                    </Bar>
                   </BarChart>
                 </ResponsiveContainer>
               </CardContent>
@@ -268,24 +272,60 @@ export default function Analytics() {
         </TabsContent>
 
         <TabsContent value="trends" className="space-y-6">
-          <Card>
-            <CardHeader>
-              <CardTitle>Request Volume Trends</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <ResponsiveContainer width="100%" height={400}>
-                <AreaChart data={data.trends}>
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="date" />
-                  <YAxis />
-                  <Tooltip />
-                  <Area type="monotone" dataKey="created" stackId="1" stroke="#3b82f6" fill="#3b82f6" />
-                  <Area type="monotone" dataKey="completed" stackId="1" stroke="#059669" fill="#059669" />
-                  <Area type="monotone" dataKey="in_progress" stackId="1" stroke="#ea580c" fill="#ea580c" />
-                </AreaChart>
-              </ResponsiveContainer>
-            </CardContent>
-          </Card>
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <Card>
+              <CardHeader>
+                <CardTitle>Daily Request Volume</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <ResponsiveContainer width="100%" height={400}>
+                  <AreaChart data={data.trends}>
+                    <CartesianGrid strokeDasharray="3 3" />
+                    <XAxis dataKey="date" tickFormatter={(value) => format(new Date(value), 'MMM dd')} />
+                    <YAxis />
+                    <Tooltip 
+                      labelFormatter={(value) => format(new Date(value), 'MMM dd, yyyy')}
+                      formatter={(value, name) => [value, name.replace('_', ' ').toUpperCase()]}
+                    />
+                    <Area type="monotone" dataKey="created" stackId="1" stroke="#3b82f6" fill="#3b82f6" fillOpacity={0.8} />
+                    <Area type="monotone" dataKey="completed" stackId="1" stroke="#059669" fill="#059669" fillOpacity={0.8} />
+                    <Area type="monotone" dataKey="in_progress" stackId="1" stroke="#ea580c" fill="#ea580c" fillOpacity={0.8} />
+                    <Area type="monotone" dataKey="pending" stackId="1" stroke="#eab308" fill="#eab308" fillOpacity={0.8} />
+                  </AreaChart>
+                </ResponsiveContainer>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle>Completion Rate Over Time</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <ResponsiveContainer width="100%" height={400}>
+                  <LineChart data={data.trends.map(d => ({
+                    ...d,
+                    completionRate: d.created > 0 ? ((d.completed / d.created) * 100).toFixed(1) : 0
+                  }))}>
+                    <CartesianGrid strokeDasharray="3 3" />
+                    <XAxis dataKey="date" tickFormatter={(value) => format(new Date(value), 'MMM dd')} />
+                    <YAxis domain={[0, 100]} />
+                    <Tooltip 
+                      labelFormatter={(value) => format(new Date(value), 'MMM dd, yyyy')}
+                      formatter={(value) => [`${value}%`, 'Completion Rate']}
+                    />
+                    <Line 
+                      type="monotone" 
+                      dataKey="completionRate" 
+                      stroke="#059669" 
+                      strokeWidth={3}
+                      dot={{ fill: '#059669', strokeWidth: 2, r: 4 }}
+                      activeDot={{ r: 6 }}
+                    />
+                  </LineChart>
+                </ResponsiveContainer>
+              </CardContent>
+            </Card>
+          </div>
         </TabsContent>
 
         <TabsContent value="priority" className="space-y-6">
@@ -321,19 +361,28 @@ export default function Analytics() {
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
-                  {data.applicationMetrics.slice(0, 5).map((app, index) => (
-                    <div key={index} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                      <div>
-                        <p className="font-medium text-gray-900">{app.name}</p>
-                        <p className="text-sm text-gray-600">
-                          {app.completedValidations}/{app.totalValidations} validations
+                  {data.applicationMetrics.slice(0, 8).map((app, index) => (
+                    <div key={index} className="flex items-center justify-between p-4 bg-gradient-to-r from-gray-50 to-blue-50 rounded-lg border border-gray-100 hover:shadow-md transition-shadow">
+                      <div className="flex-1">
+                        <p className="font-semibold text-gray-900">{app.name}</p>
+                        <p className="text-sm text-gray-600 mt-1">
+                          {app.completedValidations}/{app.totalValidations} validations completed
                         </p>
+                        <div className="mt-2 w-full bg-gray-200 rounded-full h-2">
+                          <div 
+                            className="bg-gradient-to-r from-blue-500 to-green-500 h-2 rounded-full transition-all duration-300"
+                            style={{ width: `${app.successRate}%` }}
+                          ></div>
+                        </div>
                       </div>
-                      <div className="text-right">
-                        <Badge variant={app.successRate > 90 ? "secondary" : "outline"}>
+                      <div className="text-right ml-4">
+                        <Badge 
+                          variant={app.successRate > 90 ? "secondary" : app.successRate > 75 ? "outline" : "destructive"}
+                          className="mb-2"
+                        >
                           {app.successRate.toFixed(0)}%
                         </Badge>
-                        <p className="text-xs text-gray-500 mt-1">
+                        <p className="text-xs text-gray-500">
                           {app.avgCompletionTime.toFixed(1)}h avg
                         </p>
                       </div>
@@ -346,33 +395,95 @@ export default function Analytics() {
         </TabsContent>
 
         <TabsContent value="performance" className="space-y-6">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <Card>
+              <CardHeader>
+                <CardTitle>Validation Performance Trends</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <ResponsiveContainer width="100%" height={400}>
+                  <LineChart data={data.performanceMetrics}>
+                    <CartesianGrid strokeDasharray="3 3" />
+                    <XAxis dataKey="period" />
+                    <YAxis />
+                    <Tooltip formatter={(value, name) => [`${value}h`, name]} />
+                    <Line 
+                      type="monotone" 
+                      dataKey="avgPreValidationTime" 
+                      stroke="#3b82f6" 
+                      name="Pre-Validation Time"
+                      strokeWidth={3}
+                      dot={{ fill: '#3b82f6', strokeWidth: 2, r: 4 }}
+                    />
+                    <Line 
+                      type="monotone" 
+                      dataKey="avgPostValidationTime" 
+                      stroke="#059669" 
+                      name="Post-Validation Time"
+                      strokeWidth={3}
+                      dot={{ fill: '#059669', strokeWidth: 2, r: 4 }}
+                    />
+                  </LineChart>
+                </ResponsiveContainer>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle>Total Validation Time</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <ResponsiveContainer width="100%" height={400}>
+                  <BarChart data={data.performanceMetrics}>
+                    <CartesianGrid strokeDasharray="3 3" />
+                    <XAxis dataKey="period" />
+                    <YAxis />
+                    <Tooltip formatter={(value) => [`${value}h`, 'Total Time']} />
+                    <Bar dataKey="totalTime" fill="#8884d8" radius={[4, 4, 0, 0]} />
+                  </BarChart>
+                </ResponsiveContainer>
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Performance Summary */}
           <Card>
             <CardHeader>
-              <CardTitle>Validation Performance Metrics</CardTitle>
+              <CardTitle>Performance Summary</CardTitle>
             </CardHeader>
             <CardContent>
-              <ResponsiveContainer width="100%" height={400}>
-                <LineChart data={data.performanceMetrics}>
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="period" />
-                  <YAxis />
-                  <Tooltip />
-                  <Line 
-                    type="monotone" 
-                    dataKey="avgPreValidationTime" 
-                    stroke="#3b82f6" 
-                    name="Pre-Validation Time (hrs)"
-                    strokeWidth={2}
-                  />
-                  <Line 
-                    type="monotone" 
-                    dataKey="avgPostValidationTime" 
-                    stroke="#059669" 
-                    name="Post-Validation Time (hrs)"
-                    strokeWidth={2}
-                  />
-                </LineChart>
-              </ResponsiveContainer>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div className="text-center p-4 bg-blue-50 rounded-lg">
+                  <Clock className="h-8 w-8 text-blue-600 mx-auto mb-2" />
+                  <p className="text-2xl font-bold text-blue-600">
+                    {data.performanceMetrics.length > 0 
+                      ? (data.performanceMetrics.reduce((sum, metric) => sum + metric.avgPreValidationTime, 0) / data.performanceMetrics.length).toFixed(1)
+                      : '0'
+                    }h
+                  </p>
+                  <p className="text-sm text-gray-600">Avg Pre-Validation</p>
+                </div>
+                <div className="text-center p-4 bg-green-50 rounded-lg">
+                  <CheckCircle className="h-8 w-8 text-green-600 mx-auto mb-2" />
+                  <p className="text-2xl font-bold text-green-600">
+                    {data.performanceMetrics.length > 0 
+                      ? (data.performanceMetrics.reduce((sum, metric) => sum + metric.avgPostValidationTime, 0) / data.performanceMetrics.length).toFixed(1)
+                      : '0'
+                    }h
+                  </p>
+                  <p className="text-sm text-gray-600">Avg Post-Validation</p>
+                </div>
+                <div className="text-center p-4 bg-purple-50 rounded-lg">
+                  <Activity className="h-8 w-8 text-purple-600 mx-auto mb-2" />
+                  <p className="text-2xl font-bold text-purple-600">
+                    {data.performanceMetrics.length > 0 
+                      ? (data.performanceMetrics.reduce((sum, metric) => sum + metric.totalTime, 0) / data.performanceMetrics.length).toFixed(1)
+                      : '0'
+                    }h
+                  </p>
+                  <p className="text-sm text-gray-600">Avg Total Time</p>
+                </div>
+              </div>
             </CardContent>
           </Card>
         </TabsContent>
