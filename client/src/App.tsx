@@ -6,6 +6,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { useAuth } from "@/hooks/useAuth";
 import NotFound from "@/pages/not-found";
 import SimpleLogin from "@/pages/simple-login";
+import Landing from "@/pages/landing";
 import Dashboard from "@/pages/dashboard";
 import ChangeRequestDetails from "@/pages/change-request-details";
 import ApplicationOwner from "@/pages/application-owner";
@@ -26,13 +27,15 @@ function Router() {
   return (
     <Switch>
       {!isAuthenticated ? (
-        <Route path="/" component={SimpleLogin} />
+        <>
+          <Route path="/" component={Landing} />
+          <Route path="/login" component={SimpleLogin} />
+        </>
       ) : (
         <>
           <Route path="/" component={Dashboard} />
           <Route path="/change-requests/:id" component={ChangeRequestDetails} />
           <Route path="/my-applications" component={ApplicationOwner} />
-
         </>
       )}
       <Route component={NotFound} />
