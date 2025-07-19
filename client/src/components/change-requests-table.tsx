@@ -4,7 +4,9 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Search, Download, Filter, ExternalLink } from "lucide-react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Label } from "@/components/ui/label";
+import { Search, Download, Filter, ExternalLink, X } from "lucide-react";
 import { Link } from "wouter";
 import { format } from "date-fns";
 
@@ -21,6 +23,11 @@ export default function ChangeRequestsTable({
 }: ChangeRequestsTableProps) {
   const [searchQuery, setSearchQuery] = useState("");
   const [filterType, setFilterType] = useState("all");
+  const [showMoreFilters, setShowMoreFilters] = useState(false);
+  const [filterStatus, setFilterStatus] = useState("all");
+  const [filterApplication, setFilterApplication] = useState("all");
+  const [filterDateFrom, setFilterDateFrom] = useState("");
+  const [filterDateTo, setFilterDateTo] = useState("");
 
   const filteredRequests = changeRequests.filter((request) => {
     const matchesSearch = !searchQuery.trim() || 
@@ -30,7 +37,34 @@ export default function ChangeRequestsTable({
     
     const matchesType = filterType === 'all' || request.changeType === filterType;
     
-    return matchesSearch && matchesType;
+    // Status filter
+    let matchesStatus = true;
+    if (filterStatus !== 'all') {
+      const overallStatus = getOverallStatus(request);
+      matchesStatus = overallStatus.toLowerCase() === filterStatus.toLowerCase();
+    }
+    
+    // Application filter
+    let matchesApplication = true;
+    if (filterApplication !== 'all') {
+      matchesApplication = request.applications?.some((app: any) => 
+        app.application.name.toLowerCase().includes(filterApplication.toLowerCase())
+      ) || false;
+    }
+    
+    // Date filter
+    let matchesDate = true;
+    if (filterDateFrom || filterDateTo) {
+      const requestDate = new Date(request.startDate);
+      if (filterDateFrom) {
+        matchesDate = matchesDate && requestDate >= new Date(filterDateFrom);
+      }
+      if (filterDateTo) {
+        matchesDate = matchesDate && requestDate <= new Date(filterDateTo);
+      }
+    }
+    
+    return matchesSearch && matchesType && matchesStatus && matchesApplication && matchesDate;
   });
 
   const getChangeTypeBadge = (type: string) => {
@@ -73,6 +107,135 @@ export default function ChangeRequestsTable({
 
     return latestDate;
   };
+
+  const getOverallStatus = (request: any) => {
+    if (!request.applications || request.applications.length === 0) {
+      return 'Pending';
+    }
+
+    const allCompleted = request.applications.every((app: any) => 
+      app.preChangeStatus === 'completed' && app.postChangeStatus === 'completed'
+    );
+    
+    if (allCompleted) {
+      return 'Completed';
+    }
+    
+    const anyInProgress = request.applications.some((app: any) => 
+      app.preChangeStatus === 'in_progress' || app.postChangeStatus === 'in_progress'
+    );
+    
+    if (anyInProgress) {
+      return 'In Progress';
+    }
+    
+    return 'Pending';
+  };
+
+  const exportToCSV = () => {
+    // Flatten data for CSV export
+    const flattenedData: any[] = [];
+    
+    filteredRequests.forEach(request => {
+      if (request.applications && request.applications.length > 0) {
+        request.applications.forEach((app: any) => {
+          flattenedData.push({
+            'CR ID': request.changeId,
+            'CR Title': request.title,
+            'CR Description': request.description || '',
+            'Priority': request.changeType,
+            'Overall Status': getOverallStatus(request),
+            'Start Date': request.startDate ? format(new Date(request.startDate), 'yyyy-MM-dd') : '',
+            'End Date': request.endDate ? format(new Date(request.endDate), 'yyyy-MM-dd') : '',
+            'Application Name': app.application.name,
+            'Application Description': app.application.description || '',
+            'Application Owner': app.application.spoc ? 
+              `${app.application.spoc.firstName || ''} ${app.application.spoc.lastName || ''}`.trim() : 'N/A',
+            'Application Owner Email': app.application.spoc?.email || '',
+            'Pre-Change Status': app.preChangeStatus.replace('_', ' '),
+            'Post-Change Status': app.postChangeStatus.replace('_', ' '),
+            'Pre-Change Comments': app.preChangeComments || '',
+            'Post-Change Comments': app.postChangeComments || '',
+            'Last Updated': app.preChangeUpdatedAt ? format(new Date(app.preChangeUpdatedAt), 'yyyy-MM-dd HH:mm') : ''
+          });
+        });
+      } else {
+        // If no applications, still include the change request
+        flattenedData.push({
+          'CR ID': request.changeId,
+          'CR Title': request.title,
+          'CR Description': request.description || '',
+          'Priority': request.changeType,
+          'Overall Status': getOverallStatus(request),
+          'Start Date': request.startDate ? format(new Date(request.startDate), 'yyyy-MM-dd') : '',
+          'End Date': request.endDate ? format(new Date(request.endDate), 'yyyy-MM-dd') : '',
+          'Application Name': '',
+          'Application Description': '',
+          'Application Owner': '',
+          'Application Owner Email': '',
+          'Pre-Change Status': '',
+          'Post-Change Status': '',
+          'Pre-Change Comments': '',
+          'Post-Change Comments': '',
+          'Last Updated': ''
+        });
+      }
+    });
+
+    if (flattenedData.length === 0) {
+      alert('No data to export');
+      return;
+    }
+
+    // Convert to CSV
+    const headers = Object.keys(flattenedData[0]);
+    const csvContent = [
+      headers.join(','),
+      ...flattenedData.map(row => 
+        headers.map(header => {
+          const value = row[header] || '';
+          // Escape commas and quotes in CSV
+          return typeof value === 'string' && (value.includes(',') || value.includes('"')) 
+            ? `"${value.replace(/"/g, '""')}"` 
+            : value;
+        }).join(',')
+      )
+    ].join('\n');
+
+    // Download CSV
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    if (link.download !== undefined) {
+      const url = URL.createObjectURL(blob);
+      link.setAttribute('href', url);
+      link.setAttribute('download', `change_requests_${format(new Date(), 'yyyy-MM-dd_HH-mm')}.csv`);
+      link.style.visibility = 'hidden';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    }
+  };
+
+  const clearMoreFilters = () => {
+    setFilterStatus("all");
+    setFilterApplication("all");
+    setFilterDateFrom("");
+    setFilterDateTo("");
+  };
+
+  const getUniqueApplications = () => {
+    const apps = new Set<string>();
+    changeRequests.forEach(request => {
+      if (request.applications) {
+        request.applications.forEach((app: any) => {
+          apps.add(app.application.name);
+        });
+      }
+    });
+    return Array.from(apps).sort();
+  };
+
+  const hasActiveFilters = filterStatus !== "all" || filterApplication !== "all" || filterDateFrom || filterDateTo;
 
   const getValidationSummary = (applications: any[]) => {
     if (!applications || applications.length === 0) {
@@ -215,14 +378,89 @@ export default function ChangeRequestsTable({
             </div>
             
             <div className="flex space-x-2">
-              <Button variant="outline" size="sm">
+              <Button variant="outline" size="sm" onClick={exportToCSV}>
                 <Download className="h-4 w-4 mr-2" />
-                Export
+                Export CSV
               </Button>
-              <Button variant="outline" size="sm">
-                <Filter className="h-4 w-4 mr-2" />
-                More Filters
-              </Button>
+              <Dialog open={showMoreFilters} onOpenChange={setShowMoreFilters}>
+                <DialogTrigger asChild>
+                  <Button variant="outline" size="sm" className={hasActiveFilters ? "border-blue-500 bg-blue-50" : ""}>
+                    <Filter className="h-4 w-4 mr-2" />
+                    More Filters
+                    {hasActiveFilters && (
+                      <Badge variant="secondary" className="ml-2 h-5 px-1.5 text-xs">
+                        Active
+                      </Badge>
+                    )}
+                  </Button>
+                </DialogTrigger>
+                <DialogContent className="sm:max-w-md">
+                  <DialogHeader>
+                    <DialogTitle>Additional Filters</DialogTitle>
+                  </DialogHeader>
+                  <div className="space-y-4">
+                    <div>
+                      <Label htmlFor="status-filter">Overall Status</Label>
+                      <Select value={filterStatus} onValueChange={setFilterStatus}>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Filter by Status" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="all">All Statuses</SelectItem>
+                          <SelectItem value="completed">Completed</SelectItem>
+                          <SelectItem value="in progress">In Progress</SelectItem>
+                          <SelectItem value="pending">Pending</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    
+                    <div>
+                      <Label htmlFor="application-filter">Application</Label>
+                      <Select value={filterApplication} onValueChange={setFilterApplication}>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Filter by Application" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="all">All Applications</SelectItem>
+                          {getUniqueApplications().map(app => (
+                            <SelectItem key={app} value={app}>{app}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    
+                    <div>
+                      <Label htmlFor="date-from">Start Date From</Label>
+                      <Input
+                        id="date-from"
+                        type="date"
+                        value={filterDateFrom}
+                        onChange={(e) => setFilterDateFrom(e.target.value)}
+                      />
+                    </div>
+                    
+                    <div>
+                      <Label htmlFor="date-to">Start Date To</Label>
+                      <Input
+                        id="date-to"
+                        type="date"
+                        value={filterDateTo}
+                        onChange={(e) => setFilterDateTo(e.target.value)}
+                      />
+                    </div>
+                    
+                    <div className="flex justify-between pt-4">
+                      <Button variant="outline" onClick={clearMoreFilters}>
+                        <X className="h-4 w-4 mr-2" />
+                        Clear Filters
+                      </Button>
+                      <Button onClick={() => setShowMoreFilters(false)}>
+                        Apply Filters
+                      </Button>
+                    </div>
+                  </div>
+                </DialogContent>
+              </Dialog>
             </div>
           </div>
         </CardContent>
