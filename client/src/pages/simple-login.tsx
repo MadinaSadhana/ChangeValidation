@@ -102,7 +102,7 @@ export default function SimpleLogin() {
             </form>
             <div className="mt-6 text-center">
               <p className="text-sm text-gray-500 dark:text-gray-400">
-                No password required • Change Manager Access Only
+                Change Manager Access Only
               </p>
             </div>
           </CardContent>
