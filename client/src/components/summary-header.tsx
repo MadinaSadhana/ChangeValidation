@@ -37,56 +37,54 @@ export default function SummaryHeader({ changeRequests, isLoading }: SummaryHead
     );
   }
 
-  // Calculate overall RAG status for each change request
-  const calculateRAGStatus = (request: ChangeRequest) => {
+  // Calculate overall status for each change request
+  const calculateOverallStatus = (request: ChangeRequest) => {
     if (!request.applications || request.applications.length === 0) {
-      return 'amber'; // No applications means incomplete
+      return 'pending'; // No applications means incomplete
     }
 
-    let hasRed = false;
-    let hasAmber = false;
-    let allGreen = true;
+    let hasInProgress = false;
+    let hasPending = false;
+    let allCompleted = true;
 
     for (const app of request.applications) {
       const preStatus = app.preChangeStatus;
       const postStatus = app.postChangeStatus;
 
-      // Red conditions: any validation is in progress or has issues
+      // Check if any validation is in progress
       if (preStatus === 'in_progress' || postStatus === 'in_progress') {
-        hasRed = true;
-        allGreen = false;
+        hasInProgress = true;
+        allCompleted = false;
       }
       
-      // Amber conditions: any validation is pending
+      // Check if any validation is pending
       if (preStatus === 'pending' || postStatus === 'pending') {
-        hasAmber = true;
-        allGreen = false;
+        hasPending = true;
+        allCompleted = false;
       }
 
-      // Not green if not completed or not applicable
-      if (preStatus !== 'completed' && preStatus !== 'not_applicable') {
-        allGreen = false;
-      }
-      if (postStatus !== 'completed' && postStatus !== 'not_applicable') {
-        allGreen = false;
+      // Check if not completed (excluding not_applicable which counts as complete)
+      if ((preStatus !== 'completed' && preStatus !== 'not_applicable') || 
+          (postStatus !== 'completed' && postStatus !== 'not_applicable')) {
+        allCompleted = false;
       }
     }
 
-    if (hasRed) return 'red';
-    if (hasAmber) return 'amber';
-    if (allGreen) return 'green';
-    return 'amber';
+    if (allCompleted) return 'completed';
+    if (hasInProgress) return 'in_progress';
+    if (hasPending) return 'pending';
+    return 'pending';
   };
 
   // Calculate statistics
   const totalRequests = changeRequests.length;
-  const ragCounts = changeRequests.reduce(
+  const statusCounts = changeRequests.reduce(
     (acc, request) => {
-      const status = calculateRAGStatus(request);
+      const status = calculateOverallStatus(request);
       acc[status]++;
       return acc;
     },
-    { red: 0, amber: 0, green: 0 }
+    { completed: 0, in_progress: 0, pending: 0 }
   );
 
   return (
@@ -104,31 +102,31 @@ export default function SummaryHeader({ changeRequests, isLoading }: SummaryHead
         </CardContent>
       </Card>
 
-      {/* Red Status */}
+      {/* In Progress Status */}
       <Card>
         <CardContent className="p-6">
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm font-medium text-gray-600">In Progress</p>
-              <p className="text-2xl font-bold text-red-600">{ragCounts.red}</p>
-              <Badge variant="outline" className="mt-1 border-red-200 text-red-700">
-                Red Status
+              <p className="text-2xl font-bold text-blue-600">{statusCounts.in_progress}</p>
+              <Badge variant="outline" className="mt-1 border-blue-200 text-blue-700">
+                Active Work
               </Badge>
             </div>
-            <AlertTriangle className="h-8 w-8 text-red-600" />
+            <AlertTriangle className="h-8 w-8 text-blue-600" />
           </div>
         </CardContent>
       </Card>
 
-      {/* Amber Status */}
+      {/* Pending Status */}
       <Card>
         <CardContent className="p-6">
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm font-medium text-gray-600">Pending Action</p>
-              <p className="text-2xl font-bold text-yellow-600">{ragCounts.amber}</p>
+              <p className="text-2xl font-bold text-yellow-600">{statusCounts.pending}</p>
               <Badge variant="outline" className="mt-1 border-yellow-200 text-yellow-700">
-                Amber Status
+                Awaiting Action
               </Badge>
             </div>
             <Clock className="h-8 w-8 text-yellow-600" />
@@ -136,15 +134,15 @@ export default function SummaryHeader({ changeRequests, isLoading }: SummaryHead
         </CardContent>
       </Card>
 
-      {/* Green Status */}
+      {/* Completed Status */}
       <Card>
         <CardContent className="p-6">
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm font-medium text-gray-600">Completed</p>
-              <p className="text-2xl font-bold text-green-600">{ragCounts.green}</p>
+              <p className="text-2xl font-bold text-green-600">{statusCounts.completed}</p>
               <Badge variant="outline" className="mt-1 border-green-200 text-green-700">
-                Green Status
+                Fully Complete
               </Badge>
             </div>
             <CheckCircle className="h-8 w-8 text-green-600" />

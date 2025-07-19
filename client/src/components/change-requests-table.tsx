@@ -86,6 +86,51 @@ export default function ChangeRequestsTable({
     }
   };
 
+  const calculateOverallStatus = (request: any) => {
+    if (!request.applications || request.applications.length === 0) {
+      return { status: 'No Applications', badge: 'outline', color: 'text-gray-500' };
+    }
+
+    let hasInProgress = false;
+    let hasPending = false;
+    let allCompleted = true;
+
+    for (const app of request.applications) {
+      const preStatus = app.preChangeStatus;
+      const postStatus = app.postChangeStatus;
+
+      // Check if any validation is in progress
+      if (preStatus === 'in_progress' || postStatus === 'in_progress') {
+        hasInProgress = true;
+        allCompleted = false;
+      }
+      
+      // Check if any validation is pending
+      if (preStatus === 'pending' || postStatus === 'pending') {
+        hasPending = true;
+        allCompleted = false;
+      }
+
+      // Check if not completed (excluding not_applicable which counts as complete)
+      if ((preStatus !== 'completed' && preStatus !== 'not_applicable') || 
+          (postStatus !== 'completed' && postStatus !== 'not_applicable')) {
+        allCompleted = false;
+      }
+    }
+
+    if (allCompleted) {
+      return { status: 'Completed', badge: 'secondary', color: 'text-green-600' };
+    }
+    if (hasInProgress) {
+      return { status: 'In Progress', badge: 'default', color: 'text-blue-600' };
+    }
+    if (hasPending) {
+      return { status: 'Pending', badge: 'outline', color: 'text-yellow-600' };
+    }
+    
+    return { status: 'Pending', badge: 'outline', color: 'text-gray-500' };
+  };
+
   if (isLoading) {
     return (
       <Card>
@@ -174,6 +219,9 @@ export default function ChangeRequestsTable({
                     CR Description
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Overall Status
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Application Name
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -190,7 +238,7 @@ export default function ChangeRequestsTable({
               <tbody className="bg-white divide-y divide-gray-200">
                 {filteredRequests.length === 0 ? (
                   <tr>
-                    <td colSpan={7} className="px-6 py-8 text-center text-gray-500">
+                    <td colSpan={8} className="px-6 py-8 text-center text-gray-500">
                       No change requests found matching your criteria.
                     </td>
                   </tr>
@@ -213,6 +261,11 @@ export default function ChangeRequestsTable({
                             <div className="text-xs text-gray-500 mt-1">
                               {format(new Date(request.startDateTime), "MMM dd, HH:mm")}
                             </div>
+                          </td>
+                          <td className="px-6 py-4">
+                            <Badge variant="outline" className="text-xs text-gray-500">
+                              No Applications
+                            </Badge>
                           </td>
                           <td className="px-6 py-4">
                             <span className="text-sm text-gray-500">No applications</span>
@@ -264,6 +317,18 @@ export default function ChangeRequestsTable({
                               </div>
                             </>
                           )}
+                        </td>
+                        
+                        {/* Overall Status - only show on first row */}
+                        <td className="px-6 py-4">
+                          {index === 0 && (() => {
+                            const overallStatus = calculateOverallStatus(request);
+                            return (
+                              <Badge variant={overallStatus.badge as any} className={`text-xs ${overallStatus.color}`}>
+                                {overallStatus.status}
+                              </Badge>
+                            );
+                          })()}
                         </td>
                         
                         {/* Application Name - show for each row */}

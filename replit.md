@@ -156,30 +156,35 @@ Preferred communication style: Simple, everyday language.
   - **Post-Application Checkout Status**: Individual application post-change validation status badge only
   - Color-coded badges: Gray for Completed, Blue for In Progress, Light Gray for Pending, Gray for N/A
   - Support for "Not Applicable" status handling with individual application-level tracking
-- **RAG Status Summary Header**: Enhanced summary cards showing total change requests and RAG (Red-Amber-Green) status based on Pre/Post Application checkout status:
-  - **Red Status**: Change requests with validations in progress (active work required)
-  - **Amber Status**: Change requests with pending validations (awaiting action)  
-  - **Green Status**: Change requests with all validations completed or marked not applicable
+- **Overall Status Summary Header**: Enhanced summary cards showing total change requests and overall completion status:
+  - **In Progress Status**: Change requests with validations currently being worked on (blue indicators)
+  - **Pending Status**: Change requests with validations awaiting action (yellow indicators)  
+  - **Completed Status**: Change requests with all validations completed or marked not applicable (green indicators)
   - Total count display with color-coded status indicators and descriptive badges
+- **Overall Status Column**: New table column showing calculated overall status per change request:
+  - **Completed**: Only when ALL applications have both Pre and Post validations completed or marked not applicable
+  - **In Progress**: When any application has validations currently in progress
+  - **Pending**: When any application has validations awaiting action
+  - Status is shown only on first row of each change request for clean display
 
 ### Sample Data Created (January 19, 2025)
 - **Applications**: 10 diverse applications created for comprehensive testing
   - Customer Portal, Payment Gateway, Inventory Management, Email Service, Analytics Dashboard (SPOC: User 45228804)  
   - Mobile App Backend, Notification Service, File Storage System, Audit Logging Service, Third-party Integration Hub (SPOC: User 44316444)
 
-- **Change Requests**: 9 comprehensive change requests demonstrating all scenarios
-  - **Emergency**: CR-2025-001237 (SQL Injection Hotfix - Completed with full post-validation)
-  - **P1 Priority**: CR-2025-001235 (Security Patch), CR-2025-001238 (Load Balancer), CR-2025-001242 (Mobile Auth Fix), CR-2025-001243 (SSL Renewal), CR-2025-001245 (Data Migration - Completed)
-  - **P2 Priority**: CR-2025-001234 (Database Schema), CR-2025-001240 (API Rate Limiting) 
-  - **Standard**: CR-2025-001236 (Performance Optimization), CR-2025-001239 (Email Templates), CR-2025-001241 (Database Indexing), CR-2025-001244 (Feature Flag Cleanup)
+- **Change Requests**: 14 comprehensive change requests demonstrating all scenarios
+  - **Emergency**: CR-2025-001237 (SQL Injection Hotfix), CR-2025-001250 (Critical Performance Fix - In Progress)
+  - **P1 Priority**: CR-2025-001235 (Security Patch), CR-2025-001238 (Load Balancer), CR-2025-001242 (Mobile Auth Fix), CR-2025-001243 (SSL Renewal), CR-2025-001245 (Data Migration), CR-2025-001246 (Security Certificate Renewal - Completed), CR-2025-001247 (Database Migration Phase 2 - In Progress)
+  - **P2 Priority**: CR-2025-001234 (Database Schema), CR-2025-001240 (API Rate Limiting), CR-2025-001249 (Legacy System Decommission - Completed)
+  - **Standard**: CR-2025-001236 (Performance Optimization), CR-2025-001239 (Email Templates), CR-2025-001241 (Database Indexing), CR-2025-001244 (Feature Flag Cleanup), CR-2025-001248 (Network Infrastructure Upgrade - Pending)
 
 - **Validation Status Diversity**: Comprehensive status matrix demonstrating all system capabilities
-  - **Completed Workflows**: Full pre/post validation cycles with detailed comments
-  - **In-Progress**: Mixed pre-complete/post-pending scenarios  
-  - **Not Applicable**: Applications with justified NA status and explanatory comments
-  - **Warning Scenarios**: Validations completed with performance concerns and monitoring notes
-  - **Delayed Validations**: Realistic delayed completion with explanatory comments
-  - **Critical Applications**: Priority flagged systems requiring special attention
+  - **Fully Completed Change Requests**: CR-2025-001246 (Security Certificate Renewal), CR-2025-001249 (Legacy System Decommission)
+  - **In-Progress Change Requests**: CR-2025-001247 (Database Migration), CR-2025-001250 (Emergency Performance Fix)
+  - **Pending Change Requests**: CR-2025-001248 (Network Infrastructure Upgrade) - all validations awaiting start
+  - **Mixed Status Applications**: Realistic combinations of completed, in-progress, pending, and not applicable statuses
+  - **Emergency Scenarios**: Active critical fixes with time-sensitive validations
+  - **Completed with N/A**: Applications where certain validations don't apply to specific systems
 
 ### User Configuration
 - Primary user (45228804) configured as Change Manager role
