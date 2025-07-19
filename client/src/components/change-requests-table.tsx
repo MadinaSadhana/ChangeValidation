@@ -22,6 +22,9 @@ export default function ChangeRequestsTable({
   const [searchQuery, setSearchQuery] = useState("");
   const [filterType, setFilterType] = useState("all");
 
+  console.log('Current filterType:', filterType);
+  console.log('Available changeTypes:', [...new Set(changeRequests.map(r => r.changeType))]);
+  
   const filteredRequests = changeRequests.filter((request) => {
     const matchesSearch = !searchQuery.trim() || 
       request.changeId.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -29,9 +32,11 @@ export default function ChangeRequestsTable({
       (request.description && request.description.toLowerCase().includes(searchQuery.toLowerCase()));
     
     const matchesType = filterType === 'all' || request.changeType === filterType;
-
+    
     return matchesSearch && matchesType;
   });
+  
+  console.log(`Filtered ${filteredRequests.length} requests from ${changeRequests.length} total`);
 
   const getChangeTypeBadge = (type: string) => {
     const variants = {
@@ -169,9 +174,12 @@ export default function ChangeRequestsTable({
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
               </div>
               
-              <Select value={filterType} onValueChange={setFilterType}>
+              <Select value={filterType} onValueChange={(value) => {
+                console.log('Filter changed to:', value);
+                setFilterType(value);
+              }}>
                 <SelectTrigger className="w-full sm:w-40">
-                  <SelectValue />
+                  <SelectValue placeholder="Filter by Type" />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">All Types</SelectItem>
@@ -290,7 +298,7 @@ export default function ChangeRequestsTable({
 
                     // Split into rows for each application
                     return request.applications.map((app, index) => (
-                      <tr key={`${request.id}-${app.applicationId}`} className="hover:bg-gray-50">
+                      <tr key={`${request.id}-${app.id || app.applicationId}-${index}`} className="hover:bg-gray-50">
                         {/* CR ID - only show on first row */}
                         <td className="px-6 py-4">
                           {index === 0 && (
