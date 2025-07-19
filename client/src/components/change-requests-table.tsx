@@ -236,8 +236,8 @@ export default function ChangeRequestsTable({
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="overflow-x-auto">
-            <table className="min-w-full divide-y divide-gray-200" style={{ minWidth: '1200px' }}>
+          <div className="overflow-x-auto max-w-full">
+            <table className="w-full divide-y divide-gray-200" style={{ minWidth: '1400px' }}>
               <thead className="bg-gray-50">
                 <tr>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -267,7 +267,7 @@ export default function ChangeRequestsTable({
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Post-Application Checkout Status
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider bg-white sticky right-0 z-10 border-l border-gray-200" style={{ minWidth: '150px' }}>
                     Actions
                   </th>
                 </tr>
@@ -318,9 +318,9 @@ export default function ChangeRequestsTable({
                           <td className="px-6 py-4">
                             <span className="text-xs text-gray-500">N/A</span>
                           </td>
-                          <td className="px-6 py-4">
+                          <td className="px-6 py-4 bg-white sticky right-0 z-10 border-l border-gray-200" style={{ minWidth: '150px' }}>
                             <Link href={`/change-requests/${request.id}`}>
-                              <Button variant="ghost" size="sm" className="text-blue-600 hover:text-blue-800 hover:bg-blue-50">
+                              <Button variant="outline" size="sm" className="text-blue-600 border-blue-300 hover:text-blue-800 hover:bg-blue-50 whitespace-nowrap">
                                 <ExternalLink className="h-4 w-4 mr-2" />
                                 View Details
                               </Button>
@@ -439,10 +439,10 @@ export default function ChangeRequestsTable({
                         </td>
                         
                         {/* Actions - only show on first row */}
-                        <td className="px-6 py-4">
+                        <td className="px-6 py-4 bg-white sticky right-0 z-10 border-l border-gray-200" style={{ minWidth: '150px' }}>
                           {index === 0 && (
                             <Link href={`/change-requests/${request.id}`}>
-                              <Button variant="ghost" size="sm" className="text-blue-600 hover:text-blue-800 hover:bg-blue-50">
+                              <Button variant="outline" size="sm" className="text-blue-600 border-blue-300 hover:text-blue-800 hover:bg-blue-50 whitespace-nowrap">
                                 <ExternalLink className="h-4 w-4 mr-2" />
                                 View Details
                               </Button>
