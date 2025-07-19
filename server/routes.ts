@@ -13,9 +13,51 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Auth middleware
   await setupAuth(app);
 
-  // Auth routes
-  app.get('/api/auth/user', isAuthenticated, async (req: any, res) => {
+  // Simple login route for Change Managers
+  app.post('/api/simple-login', async (req, res) => {
     try {
+      const { name } = req.body;
+      if (!name || typeof name !== 'string' || !name.trim()) {
+        return res.status(400).json({ message: "Name is required" });
+      }
+
+      // Create a simple session for the change manager
+      const userId = `cm_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+      const user = await storage.upsertUser({
+        id: userId,
+        email: null,
+        firstName: name.trim(),
+        lastName: null,
+        profileImageUrl: null,
+        role: 'change_manager'
+      });
+
+      // Store user session
+      (req.session as any).user = { id: userId, role: 'change_manager' };
+      res.json({ success: true, user });
+    } catch (error) {
+      console.error("Error during simple login:", error);
+      res.status(500).json({ message: "Login failed" });
+    }
+  });
+
+  // Auth routes
+  app.get('/api/auth/user', async (req: any, res) => {
+    try {
+      // Check for simple login session first
+      if ((req.session as any)?.user) {
+        const sessionUser = (req.session as any).user;
+        const user = await storage.getUser(sessionUser.id);
+        if (user) {
+          return res.json(user);
+        }
+      }
+
+      // Fallback to Replit auth
+      if (!req.isAuthenticated() || !req.user?.claims?.sub) {
+        return res.status(401).json({ message: "Unauthorized" });
+      }
+
       const userId = req.user.claims.sub;
       const user = await storage.getUser(userId);
       res.json(user);
@@ -23,6 +65,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
       console.error("Error fetching user:", error);
       res.status(500).json({ message: "Failed to fetch user" });
     }
+  });
+
+  // Simple logout route
+  app.post('/api/simple-logout', (req, res) => {
+    (req.session as any).user = null;
+    res.json({ success: true });
   });
 
   // Application routes

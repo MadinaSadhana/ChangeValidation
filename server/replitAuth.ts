@@ -128,9 +128,21 @@ export async function setupAuth(app: Express) {
 }
 
 export const isAuthenticated: RequestHandler = async (req, res, next) => {
+  // Check for simple login session first
+  if ((req.session as any)?.user) {
+    // Set a mock user object that matches the expected structure
+    req.user = {
+      claims: {
+        sub: (req.session as any).user.id
+      }
+    };
+    return next();
+  }
+
+  // Fallback to Replit auth
   const user = req.user as any;
 
-  if (!req.isAuthenticated() || !user.expires_at) {
+  if (!req.isAuthenticated() || !user?.expires_at) {
     return res.status(401).json({ message: "Unauthorized" });
   }
 

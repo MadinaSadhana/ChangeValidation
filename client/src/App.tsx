@@ -5,7 +5,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { useAuth } from "@/hooks/useAuth";
 import NotFound from "@/pages/not-found";
-import Landing from "@/pages/landing";
+import SimpleLogin from "@/pages/simple-login";
 import Dashboard from "@/pages/dashboard";
 import ChangeRequestDetails from "@/pages/change-request-details";
 import ApplicationOwner from "@/pages/application-owner";
@@ -24,7 +24,7 @@ function Router() {
   return (
     <Switch>
       {!isAuthenticated ? (
-        <Route path="/" component={Landing} />
+        <Route path="/" component={SimpleLogin} />
       ) : (
         <>
           <Route path="/" component={Dashboard} />

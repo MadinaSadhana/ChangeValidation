@@ -3,6 +3,9 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Bell, ChevronDown } from "lucide-react";
 import { Link, useLocation } from "wouter";
+import { useMutation } from "@tanstack/react-query";
+import { apiRequest } from "@/lib/queryClient";
+import { useToast } from "@/hooks/use-toast";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -13,9 +16,30 @@ import {
 export default function NavigationHeader() {
   const { user } = useAuth();
   const [location] = useLocation();
+  const { toast } = useToast();
+
+  const logoutMutation = useMutation({
+    mutationFn: async () => {
+      return apiRequest("/api/simple-logout", "POST");
+    },
+    onSuccess: () => {
+      toast({
+        title: "Logged Out",
+        description: "You have been successfully logged out.",
+      });
+      window.location.href = "/";
+    },
+    onError: () => {
+      toast({
+        title: "Logout Error", 
+        description: "There was an issue logging out. Please try again.",
+        variant: "destructive",
+      });
+    },
+  });
 
   const handleLogout = () => {
-    window.location.href = "/api/logout";
+    logoutMutation.mutate();
   };
 
   const getInitials = (firstName?: string | null, lastName?: string | null) => {
