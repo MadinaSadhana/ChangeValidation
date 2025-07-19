@@ -83,9 +83,9 @@ export default function NavigationHeader() {
           <div className="flex items-center space-x-4">
             <div className="flex-shrink-0">
               <Link href="/">
-                <h1 className="text-xl font-semibold text-primary cursor-pointer">
+                <div className="text-xl font-semibold text-primary cursor-pointer">
                   Change Request Management
-                </h1>
+                </div>
               </Link>
             </div>
             <nav className="hidden md:flex space-x-8">
@@ -98,6 +98,17 @@ export default function NavigationHeader() {
                   Dashboard
                 </a>
               </Link>
+              {isChangeManager && (
+                <Link href="/analytics">
+                  <a className={`px-1 pb-4 text-sm font-medium transition-colors ${
+                    location === '/analytics' 
+                      ? 'text-primary border-b-2 border-primary' 
+                      : 'text-gray-500 hover:text-gray-700'
+                  }`}>
+                    Analytics
+                  </a>
+                </Link>
+              )}
               {!isChangeManager && (
                 <Link href="/my-applications">
                   <a className={`px-1 pb-4 text-sm font-medium transition-colors ${

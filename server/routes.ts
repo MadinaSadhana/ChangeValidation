@@ -406,7 +406,40 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Analytics routes
+  app.get('/api/analytics', async (req: any, res) => {
+    try {
+      let userId;
+      let user;
 
+      // Check for simple login session first
+      if ((req.session as any)?.user) {
+        const sessionUser = (req.session as any).user;
+        user = await storage.getUser(sessionUser.id);
+        userId = sessionUser.id;
+      } else if (req.isAuthenticated() && req.user?.claims?.sub) {
+        userId = req.user.claims.sub;
+        user = await storage.getUser(userId);
+      } else {
+        return res.status(401).json({ message: "Unauthorized" });
+      }
+
+      if (!user) {
+        return res.status(401).json({ message: "User not found" });
+      }
+
+      if (user?.role !== 'change_manager') {
+        return res.status(403).json({ message: "Only change managers can access analytics" });
+      }
+
+      const timeRange = req.query.timeRange as string || '30d';
+      const analytics = await storage.getAnalyticsData(timeRange);
+      res.json(analytics);
+    } catch (error) {
+      console.error("Error fetching analytics:", error);
+      res.status(500).json({ message: "Failed to fetch analytics data" });
+    }
+  });
 
   const httpServer = createServer(app);
   return httpServer;

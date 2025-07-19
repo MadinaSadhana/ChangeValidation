@@ -66,6 +66,9 @@ export interface IStorage {
     completed: number;
     total: number;
   }>;
+  
+  // Analytics operations
+  getAnalyticsData(timeRange: string): Promise<any>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -501,6 +504,258 @@ export class DatabaseStorage implements IStorage {
       completed: completed.count,
       total: total.count,
     };
+  }
+
+  // Analytics operations
+  async getAnalyticsData(timeRange: string): Promise<any> {
+    try {
+      // Calculate date range
+      let startDate: Date;
+      const now = new Date();
+      
+      switch (timeRange) {
+        case '7d':
+          startDate = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+          break;
+        case '30d':
+          startDate = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+          break;
+        case '90d':
+          startDate = new Date(now.getTime() - 90 * 24 * 60 * 60 * 1000);
+          break;
+        case '1y':
+          startDate = new Date(now.getTime() - 365 * 24 * 60 * 60 * 1000);
+          break;
+        default:
+          startDate = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+      }
+
+      // Get all change requests with their applications
+      const allRequests = await this.getChangeRequests();
+      
+      // Calculate overview metrics
+      const totalRequests = allRequests.length;
+      let completedRequests = 0;
+      let inProgressRequests = 0;
+      let pendingRequests = 0;
+      let totalCompletionTimes: number[] = [];
+
+      // Priority distribution
+      const priorityCount: { [key: string]: number } = {
+        P1: 0,
+        P2: 0,
+        Emergency: 0,
+        Standard: 0
+      };
+
+      // Application metrics tracking
+      const applicationMetricsMap = new Map<string, {
+        name: string;
+        totalValidations: number;
+        completedValidations: number;
+        completionTimes: number[];
+      }>();
+
+      // Process each change request
+      allRequests.forEach(request => {
+        // Count by priority
+        priorityCount[request.changeType] = (priorityCount[request.changeType] || 0) + 1;
+
+        // Calculate overall status
+        let allCompleted = true;
+        let hasInProgress = false;
+        let hasPending = false;
+
+        if (request.applications && request.applications.length > 0) {
+          request.applications.forEach(app => {
+            const appName = app.application.name;
+            
+            // Initialize app metrics if not exists
+            if (!applicationMetricsMap.has(appName)) {
+              applicationMetricsMap.set(appName, {
+                name: appName,
+                totalValidations: 0,
+                completedValidations: 0,
+                completionTimes: []
+              });
+            }
+            
+            const appMetrics = applicationMetricsMap.get(appName)!;
+            appMetrics.totalValidations += 2; // Pre and post validation
+
+            const preStatus = app.preChangeStatus;
+            const postStatus = app.postChangeStatus;
+
+            // Count completed validations
+            if (preStatus === 'completed') appMetrics.completedValidations += 1;
+            if (postStatus === 'completed') appMetrics.completedValidations += 1;
+
+            // Calculate completion times based on actual data
+            if (preStatus === 'completed' && app.preChangeUpdatedAt && request.createdAt) {
+              const hours = (new Date(app.preChangeUpdatedAt).getTime() - new Date(request.createdAt).getTime()) / (1000 * 60 * 60);
+              if (hours > 0 && hours < 168) { // Less than a week
+                appMetrics.completionTimes.push(hours);
+              }
+            }
+
+            // Check status for overall calculation
+            if (preStatus === 'in_progress' || postStatus === 'in_progress') {
+              hasInProgress = true;
+            } else if (preStatus === 'pending' || postStatus === 'pending') {
+              hasPending = true;
+            }
+            
+            if (preStatus !== 'completed' || postStatus !== 'completed') {
+              allCompleted = false;
+            }
+          });
+        } else {
+          allCompleted = false;
+          hasPending = true;
+        }
+
+        // Categorize request
+        if (allCompleted) {
+          completedRequests++;
+          // Calculate actual completion time if possible
+          const createdTime = new Date(request.createdAt!).getTime();
+          const updatedTime = new Date(request.updatedAt!).getTime();
+          const hours = (updatedTime - createdTime) / (1000 * 60 * 60);
+          if (hours > 0 && hours < 336) { // Less than 2 weeks
+            totalCompletionTimes.push(hours);
+          }
+        } else if (hasInProgress) {
+          inProgressRequests++;
+        } else {
+          pendingRequests++;
+        }
+      });
+
+      // Calculate average completion time
+      const avgCompletionTime = totalCompletionTimes.length > 0 
+        ? totalCompletionTimes.reduce((sum, time) => sum + time, 0) / totalCompletionTimes.length 
+        : 0;
+
+      // Calculate success rate
+      const successRate = totalRequests > 0 ? (completedRequests / totalRequests) * 100 : 0;
+
+      // Generate trends data based on actual creation dates
+      const trends = [];
+      const daysCount = timeRange === '7d' ? 7 : timeRange === '30d' ? 30 : timeRange === '90d' ? 90 : 365;
+      
+      for (let i = daysCount - 1; i >= 0; i--) {
+        const date = new Date(now.getTime() - i * 24 * 60 * 60 * 1000);
+        const dateStr = date.toISOString().split('T')[0];
+        
+        // Count actual requests for this date
+        const dayRequests = allRequests.filter(req => 
+          new Date(req.createdAt!).toISOString().split('T')[0] === dateStr
+        );
+        
+        const created = dayRequests.length;
+        const completed = dayRequests.filter(req => {
+          const allAppsCompleted = req.applications?.every(app => 
+            app.preChangeStatus === 'completed' && app.postChangeStatus === 'completed'
+          ) || false;
+          return allAppsCompleted;
+        }).length;
+        
+        const inProgress = dayRequests.filter(req => {
+          const hasInProgress = req.applications?.some(app => 
+            app.preChangeStatus === 'in_progress' || app.postChangeStatus === 'in_progress'
+          ) || false;
+          return hasInProgress;
+        }).length;
+
+        trends.push({
+          date: dateStr,
+          created,
+          completed,
+          pending: created - completed - inProgress,
+          in_progress: inProgress
+        });
+      }
+
+      // Convert priority count to array format
+      const priorityDistribution = Object.entries(priorityCount).map(([name, value]) => ({
+        name,
+        value,
+        color: name === 'P1' ? '#dc2626' : name === 'P2' ? '#ea580c' : name === 'Emergency' ? '#991b1b' : '#059669'
+      }));
+
+      // Convert application metrics to array
+      const applicationMetrics = Array.from(applicationMetricsMap.values()).map(app => ({
+        ...app,
+        avgCompletionTime: app.completionTimes.length > 0 
+          ? app.completionTimes.reduce((sum, time) => sum + time, 0) / app.completionTimes.length 
+          : 0,
+        successRate: app.totalValidations > 0 ? (app.completedValidations / app.totalValidations) * 100 : 0
+      }));
+
+      // Generate performance metrics based on weekly aggregations
+      const performanceMetrics = [];
+      const weekCount = Math.min(Math.ceil(daysCount / 7), 12);
+      
+      for (let i = 0; i < weekCount; i++) {
+        const weekStart = new Date(now.getTime() - (i + 1) * 7 * 24 * 60 * 60 * 1000);
+        const weekEnd = new Date(now.getTime() - i * 7 * 24 * 60 * 60 * 1000);
+        
+        const weekRequests = allRequests.filter(req => {
+          const createdDate = new Date(req.createdAt!);
+          return createdDate >= weekStart && createdDate < weekEnd;
+        });
+
+        // Calculate average validation times for the week
+        let preValidationTimes: number[] = [];
+        let postValidationTimes: number[] = [];
+        
+        weekRequests.forEach(req => {
+          req.applications?.forEach(app => {
+            if (app.preChangeStatus === 'completed' && app.preChangeUpdatedAt) {
+              const preTime = (new Date(app.preChangeUpdatedAt).getTime() - new Date(req.createdAt!).getTime()) / (1000 * 60 * 60);
+              if (preTime > 0 && preTime < 72) preValidationTimes.push(preTime);
+            }
+            if (app.postChangeStatus === 'completed' && app.postChangeUpdatedAt && app.preChangeUpdatedAt) {
+              const postTime = (new Date(app.postChangeUpdatedAt).getTime() - new Date(app.preChangeUpdatedAt).getTime()) / (1000 * 60 * 60);
+              if (postTime > 0 && postTime < 72) postValidationTimes.push(postTime);
+            }
+          });
+        });
+
+        const avgPreTime = preValidationTimes.length > 0 
+          ? preValidationTimes.reduce((sum, time) => sum + time, 0) / preValidationTimes.length 
+          : 0;
+        const avgPostTime = postValidationTimes.length > 0 
+          ? postValidationTimes.reduce((sum, time) => sum + time, 0) / postValidationTimes.length 
+          : 0;
+
+        performanceMetrics.unshift({
+          period: `Week ${weekCount - i}`,
+          avgPreValidationTime: avgPreTime,
+          avgPostValidationTime: avgPostTime,
+          totalTime: avgPreTime + avgPostTime
+        });
+      }
+
+      return {
+        overview: {
+          totalRequests,
+          completedRequests,
+          inProgressRequests,
+          pendingRequests,
+          avgCompletionTime,
+          successRate
+        },
+        trends,
+        priorityDistribution,
+        applicationMetrics,
+        performanceMetrics
+      };
+
+    } catch (error) {
+      console.error("Error generating analytics data:", error);
+      throw error;
+    }
   }
 }
 
