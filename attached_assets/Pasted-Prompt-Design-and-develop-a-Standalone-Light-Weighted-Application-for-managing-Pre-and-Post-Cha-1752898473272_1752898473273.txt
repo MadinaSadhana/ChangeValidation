@@ -1,0 +1,119 @@
+Prompt:
+
+"Design and develop a Standalone Light-Weighted Application for managing Pre and Post Change Validation to address the challenges in the current manual process of application checkouts during change request execution. The application should streamline the process, reduce manual effort, and maintain historical data for future optimization. Below are the detailed requirements:
+
+Use Case: Pre and Post Change Validation
+Current Process:
+
+During Change Request execution, the Change Manager requests the respective impacted application teams to perform application checkouts.
+Application checkouts can be extensive due to the number of impacted environments, especially in P1, P2, and Emergency changes.
+The Change Manager connects with each Application SPOC (Single Point of Contact) individually and records their checkout status (both Pre and Post Change) manually.
+Challenges:
+
+High manual interaction leads to increased validation time.
+Extended change windows due to inefficiencies.
+Risk of human error while documenting Pre and Post Change Checkout results.
+Lack of historical data for application validation as it is currently tracked in Excel.
+Proposed Solution
+Objective: Build a lightweight, standalone application to streamline the Pre and Post Change Validation process.
+
+Key Features:
+
+Change Request Creation:
+
+Change Manager can create a new change request with the following details:
+Change Request ID (auto-generated)
+Change Title/Description
+Change Type (P1, P2, Emergency, etc.)
+Impacted Applications List (Dropdown/Multiselect)
+Application SPOC Details (Name, Email, Contact Number)
+Scheduled Change Window (Start Date/Time and End Date/Time)
+Pre and Post Change Validation:
+
+Application Owners (SPOCs) can log in and update the status for their respective applications:
+Pre-Change Checkout Status (Dropdown: Completed, Pending, Not Applicable)
+Post-Change Checkout Status (Dropdown: Completed, Pending, Not Applicable)
+Comments/Observations (Optional Text Area)
+Attachments (Optional): Upload screenshots or logs for validation proof.
+Change Manager Dashboard:
+
+View all active change requests and their statuses.
+Monitor Pre and Post Change Validation statuses for each application in real-time.
+Filter and search functionality by Change ID, Application Name, or Status.
+Notifications:
+
+Automated email or in-app notifications for:
+Application Owners to update Pre and Post Change Validation statuses.
+Change Manager when all statuses are completed.
+Escalations for overdue validations.
+Historical Data and Reporting:
+
+Maintain a historical log of all change requests and their validation statuses.
+Generate reports for:
+Change Requests with incomplete validations.
+Application-specific validation history.
+Overall validation success rate by Change Type (e.g., P1, P2, Emergency).
+User Roles and Permissions:
+
+Change Manager:
+Create and manage change requests.
+View and review validation statuses.
+Application Owner (SPOC):
+Update Pre and Post Change Validation statuses for their assigned applications.
+Admin:
+Manage users, roles, and system configurations.
+Workflows
+Change Request Workflow:
+
+Step 1: Change Manager creates a new change request and assigns impacted applications with their respective SPOCs.
+Step 2: Application Owners receive notifications to update their Pre-Change Validation status.
+Step 3: Change Manager reviews Pre-Change Validation statuses before executing the change.
+Step 4: After the change is implemented, Application Owners update their Post-Change Validation status.
+Step 5: Change Manager reviews and closes the request upon successful validation.
+Escalation Workflow:
+
+Step 1: If Pre or Post Change Validation is not updated within the scheduled time, automated reminders are sent.
+Step 2: Escalation notifications are sent to the Change Manager for overdue validations.
+Output Screens
+Login Page:
+
+Role-based access for Change Managers, Application Owners, and Admins.
+Dashboard:
+
+Overview of all active change requests with statuses for Pre and Post Change Validation.
+Summary charts for validation progress (e.g., Completed vs Pending).
+Change Request Details Page:
+
+Detailed view of a specific change request, including:
+Change ID, Title, Type, and Scheduled Window.
+List of impacted applications with their SPOCs and validation statuses.
+Comments and attachments uploaded by Application Owners.
+Application Owner Interface:
+
+List of assigned applications for validation.
+Easy-to-update Pre and Post Change Validation statuses with comments and attachments.
+Historical Data and Reports:
+
+Searchable and filterable logs of past change requests.
+Exportable reports in Excel or PDF formats.
+Benefits
+Streamlined Process:
+
+Centralized platform for managing Pre and Post Change Validation.
+Eliminates the need for manual communication and tracking.
+Faster Validation:
+
+Automated notifications and real-time status updates reduce validation time.
+Reduced Errors:
+
+Standardized input fields and automated workflows minimize human error.
+Historical Data:
+
+Maintains a comprehensive validation history for each application and change request.
+Enables data-driven optimization of impacted applications.
+Technology Stack
+Frontend: React.js, Angular, or Vue.js for a lightweight and responsive UI.
+Backend: Node.js, Python/Django, or .NET Core for scalable and secure APIs.
+Database: PostgreSQL, MySQL, or MongoDB for storing change request and validation data.
+Hosting: Cloud-based deployment (e.g., AWS, Azure, or Google Cloud) for scalability.
+Develop this application to be simple, intuitive, and efficient, ensuring it addresses the challenges of manual processes while providing long-term benefits through automation and historical data tracking."
