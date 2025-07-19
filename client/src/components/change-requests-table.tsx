@@ -199,9 +199,6 @@ export default function ChangeRequestsTable({
                     Post-Application Checkout Status
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Overall Status
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Actions
                   </th>
                 </tr>
@@ -209,7 +206,7 @@ export default function ChangeRequestsTable({
               <tbody className="bg-white divide-y divide-gray-200">
                 {filteredRequests.length === 0 ? (
                   <tr>
-                    <td colSpan={8} className="px-6 py-8 text-center text-gray-500">
+                    <td colSpan={7} className="px-6 py-8 text-center text-gray-500">
                       No change requests found matching your criteria.
                     </td>
                   </tr>
@@ -241,14 +238,6 @@ export default function ChangeRequestsTable({
                           </td>
                           <td className="px-6 py-4">
                             <span className="text-xs text-gray-500">N/A</span>
-                          </td>
-                          <td className="px-6 py-4">
-                            <Badge 
-                              variant={request.status === 'completed' ? 'secondary' : request.status === 'active' ? 'default' : 'outline'}
-                              className="capitalize"
-                            >
-                              {request.status}
-                            </Badge>
                           </td>
                           <td className="px-6 py-4">
                             <Link href={`/change-requests/${request.id}`}>
@@ -340,18 +329,6 @@ export default function ChangeRequestsTable({
                             <div className="text-xs text-gray-500 mt-1 truncate max-w-32">
                               {app.postChangeComments}
                             </div>
-                          )}
-                        </td>
-                        
-                        {/* Overall Status - only show on first row */}
-                        <td className="px-6 py-4">
-                          {index === 0 && (
-                            <Badge 
-                              variant={request.status === 'completed' ? 'secondary' : request.status === 'active' ? 'default' : 'outline'}
-                              className="capitalize"
-                            >
-                              {request.status}
-                            </Badge>
                           )}
                         </td>
                         

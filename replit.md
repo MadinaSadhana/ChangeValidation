@@ -154,7 +154,6 @@ Preferred communication style: Simple, everyday language.
   - **Application Name**: Individual application name with SPOC information
   - **Pre-Application Checkout Status**: Individual application pre-change validation status with comments
   - **Post-Application Checkout Status**: Individual application post-change validation status with comments
-  - **Overall Status**: Change request status (shown only on first application row)
   - Color-coded badges: Gray for Completed, Blue for In Progress, Light Gray for Pending, Gray for N/A
   - Support for "Not Applicable" status handling with individual application-level tracking
 
