@@ -216,7 +216,8 @@ export default function ChangeRequestDetails() {
                 <thead className="bg-gray-50">
                   <tr>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Application</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">SPOC</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Application Owner</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Application Owner Email</th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Pre-Change</th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Post-Change</th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Last Updated</th>
@@ -234,16 +235,16 @@ export default function ChangeRequestDetails() {
                         </div>
                       </td>
                       <td className="px-6 py-4">
-                        <div>
-                          <div className="text-sm text-gray-900">
-                            {app.application.spoc ? 
-                              `${app.application.spoc.firstName || ''} ${app.application.spoc.lastName || ''}`.trim() || 'N/A'
-                              : 'N/A'
-                            }
-                          </div>
-                          <div className="text-sm text-gray-500">
-                            {app.application.spoc?.email || 'No email'}
-                          </div>
+                        <div className="text-sm font-medium text-gray-900">
+                          {app.application.spoc ? 
+                            `${app.application.spoc.firstName || ''} ${app.application.spoc.lastName || ''}`.trim() || 'No Owner Assigned'
+                            : 'No Owner Assigned'
+                          }
+                        </div>
+                      </td>
+                      <td className="px-6 py-4">
+                        <div className="text-sm text-gray-600">
+                          {app.application.spoc?.email || 'No email provided'}
                         </div>
                       </td>
                       <td className="px-6 py-4">
