@@ -33,7 +33,12 @@ export interface IStorage {
     status?: string;
     managerId?: string;
     spocId?: string;
-  }): Promise<(ChangeRequest & { applicationCount: number })[]>;
+  }): Promise<(ChangeRequest & { 
+    applicationCount: number;
+    applications: (ChangeRequestApplication & {
+      application: Application & { spoc: User | null };
+    })[];
+  })[]>;
   getChangeRequestById(id: number): Promise<ChangeRequest | undefined>;
   getChangeRequestByChangeId(changeId: string): Promise<ChangeRequest | undefined>;
   createChangeRequest(changeRequest: InsertChangeRequest): Promise<ChangeRequest>;
@@ -110,26 +115,14 @@ export class DatabaseStorage implements IStorage {
     status?: string;
     managerId?: string;
     spocId?: string;
-  }): Promise<(ChangeRequest & { applicationCount: number })[]> {
-    let query = db
-      .select({
-        id: changeRequests.id,
-        changeId: changeRequests.changeId,
-        title: changeRequests.title,
-        description: changeRequests.description,
-        changeType: changeRequests.changeType,
-        status: changeRequests.status,
-        startDateTime: changeRequests.startDateTime,
-        endDateTime: changeRequests.endDateTime,
-        changeManagerId: changeRequests.changeManagerId,
-        createdAt: changeRequests.createdAt,
-        updatedAt: changeRequests.updatedAt,
-        applicationCount: count(changeRequestApplications.id),
-      })
-      .from(changeRequests)
-      .leftJoin(changeRequestApplications, eq(changeRequests.id, changeRequestApplications.changeRequestId))
-      .groupBy(changeRequests.id);
-
+  }): Promise<(ChangeRequest & { 
+    applicationCount: number;
+    applications: (ChangeRequestApplication & {
+      application: Application & { spoc: User | null };
+    })[];
+  })[]> {
+    // First get basic change requests with filters
+    let baseQuery = db.select().from(changeRequests);
     const conditions = [];
     
     if (filters?.search) {
@@ -152,18 +145,39 @@ export class DatabaseStorage implements IStorage {
     if (filters?.managerId) {
       conditions.push(eq(changeRequests.changeManagerId, filters.managerId));
     }
-    
-    // Filter by SPOC - show only change requests that have applications assigned to this SPOC
-    if (filters?.spocId) {
-      query = query.innerJoin(applications, eq(changeRequestApplications.applicationId, applications.id));
-      conditions.push(eq(applications.spocId, filters.spocId));
-    }
 
     if (conditions.length > 0) {
-      query = query.where(and(...conditions)) as any;
+      baseQuery = baseQuery.where(and(...conditions)) as any;
     }
 
-    return await query.orderBy(desc(changeRequests.createdAt));
+    let requests = await baseQuery.orderBy(desc(changeRequests.createdAt));
+
+    // Filter by SPOC after getting basic results
+    if (filters?.spocId) {
+      // Get change request IDs that have applications assigned to this SPOC
+      const spocChangeRequestIds = await db
+        .select({ changeRequestId: changeRequestApplications.changeRequestId })
+        .from(changeRequestApplications)
+        .innerJoin(applications, eq(changeRequestApplications.applicationId, applications.id))
+        .where(eq(applications.spocId, filters.spocId));
+      
+      const changeRequestIds = new Set(spocChangeRequestIds.map(cr => cr.changeRequestId));
+      requests = requests.filter(req => changeRequestIds.has(req.id));
+    }
+
+    // Now get applications for each request
+    const requestsWithApps = await Promise.all(
+      requests.map(async (request) => {
+        const applications = await this.getChangeRequestApplications(request.id);
+        return {
+          ...request,
+          applicationCount: applications.length,
+          applications
+        };
+      })
+    );
+
+    return requestsWithApps;
   }
 
   async getChangeRequestById(id: number): Promise<ChangeRequest | undefined> {

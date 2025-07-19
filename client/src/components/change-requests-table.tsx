@@ -44,6 +44,45 @@ export default function ChangeRequestsTable({
     return variants[type as keyof typeof variants] || "secondary";
   };
 
+  const getValidationSummary = (applications: any[]) => {
+    if (!applications || applications.length === 0) {
+      return {
+        totalApps: 0,
+        preCompleted: 0,
+        postCompleted: 0,
+        preChange: 'No Data',
+        postChange: 'No Data'
+      };
+    }
+
+    const totalApps = applications.length;
+    const preCompleted = applications.filter(app => app.preChangeStatus === 'completed').length;
+    const postCompleted = applications.filter(app => app.postChangeStatus === 'completed').length;
+
+    const getOverallStatus = (completed: number, total: number) => {
+      if (completed === 0) return 'Pending';
+      if (completed === total) return 'Completed';
+      return 'In Progress';
+    };
+
+    return {
+      totalApps,
+      preCompleted,
+      postCompleted,
+      preChange: getOverallStatus(preCompleted, totalApps),
+      postChange: getOverallStatus(postCompleted, totalApps)
+    };
+  };
+
+  const getValidationBadgeVariant = (status: string) => {
+    switch (status) {
+      case 'Completed': return 'secondary';
+      case 'In Progress': return 'default';
+      case 'Pending': return 'outline';
+      default: return 'outline';
+    }
+  };
+
   if (isLoading) {
     return (
       <Card>
@@ -74,34 +113,36 @@ export default function ChangeRequestsTable({
               <div className="relative">
                 <Input
                   type="text"
-                  placeholder="Search by Change ID or Title..."
-                  className="w-full sm:w-80 pl-10"
+                  placeholder="Search change requests..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
+                  className="pl-10 w-full sm:w-64"
                 />
-                <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
               </div>
               
-              <Select value={filterType || "all"} onValueChange={(value) => setFilterType(value === "all" ? "" : value)}>
+              <Select value={filterType} onValueChange={setFilterType}>
                 <SelectTrigger className="w-full sm:w-40">
-                  <SelectValue placeholder="All Types" />
+                  <SelectValue placeholder="Change Type" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">All Types</SelectItem>
-                  <SelectItem value="P1">P1 - Critical</SelectItem>
-                  <SelectItem value="P2">P2 - High</SelectItem>
+                  <SelectItem value="">All Types</SelectItem>
+                  <SelectItem value="P1">P1</SelectItem>
+                  <SelectItem value="P2">P2</SelectItem>
                   <SelectItem value="Emergency">Emergency</SelectItem>
                   <SelectItem value="Standard">Standard</SelectItem>
                 </SelectContent>
               </Select>
-              
-              <Select value={filterStatus || "all"} onValueChange={(value) => setFilterStatus(value === "all" ? "" : value)}>
+
+              <Select value={filterStatus} onValueChange={setFilterStatus}>
                 <SelectTrigger className="w-full sm:w-40">
-                  <SelectValue placeholder="All Statuses" />
+                  <SelectValue placeholder="Status" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">All Statuses</SelectItem>
+                  <SelectItem value="">All Status</SelectItem>
                   <SelectItem value="active">Active</SelectItem>
+                  <SelectItem value="scheduled">Scheduled</SelectItem>
+                  <SelectItem value="in_progress">In Progress</SelectItem>
                   <SelectItem value="completed">Completed</SelectItem>
                   <SelectItem value="cancelled">Cancelled</SelectItem>
                 </SelectContent>
@@ -144,6 +185,12 @@ export default function ChangeRequestsTable({
                     Applications
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Pre-Checkout
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Post-Checkout
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Schedule
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -154,47 +201,78 @@ export default function ChangeRequestsTable({
               <tbody className="bg-white divide-y divide-gray-200">
                 {filteredRequests.length === 0 ? (
                   <tr>
-                    <td colSpan={5} className="px-6 py-8 text-center text-gray-500">
+                    <td colSpan={7} className="px-6 py-8 text-center text-gray-500">
                       No change requests found matching your criteria.
                     </td>
                   </tr>
                 ) : (
-                  filteredRequests.map((request) => (
-                    <tr key={request.id} className="hover:bg-gray-50">
-                      <td className="px-6 py-4">
-                        <div>
-                          <div className="text-sm font-medium text-gray-900">{request.changeId}</div>
-                          <div className="text-sm text-gray-500">{request.title}</div>
-                        </div>
-                      </td>
-                      <td className="px-6 py-4">
-                        <Badge variant={getChangeTypeBadge(request.changeType)}>
-                          {request.changeType}
-                        </Badge>
-                      </td>
-                      <td className="px-6 py-4">
-                        <div className="text-sm text-gray-900">
-                          {request.applicationCount} Application{request.applicationCount !== 1 ? 's' : ''}
-                        </div>
-                      </td>
-                      <td className="px-6 py-4">
-                        <div className="text-sm text-gray-900">
-                          {format(new Date(request.startDateTime), "MMM dd, yyyy")}
-                        </div>
-                        <div className="text-sm text-gray-500">
-                          {format(new Date(request.startDateTime), "HH:mm")} - {format(new Date(request.endDateTime), "HH:mm")}
-                        </div>
-                      </td>
-                      <td className="px-6 py-4">
-                        <Link href={`/change-requests/${request.id}`}>
-                          <Button variant="ghost" size="sm">
-                            <ExternalLink className="h-4 w-4 mr-2" />
-                            View Details
-                          </Button>
-                        </Link>
-                      </td>
-                    </tr>
-                  ))
+                  filteredRequests.map((request) => {
+                    // Calculate validation status summary
+                    const validationSummary = getValidationSummary(request.applications || []);
+                    
+                    return (
+                      <tr key={request.id} className="hover:bg-gray-50">
+                        <td className="px-6 py-4">
+                          <div>
+                            <div className="text-sm font-medium text-gray-900">{request.changeId}</div>
+                            <div className="text-sm text-gray-500">{request.title}</div>
+                          </div>
+                        </td>
+                        <td className="px-6 py-4">
+                          <Badge variant={getChangeTypeBadge(request.changeType)}>
+                            {request.changeType}
+                          </Badge>
+                        </td>
+                        <td className="px-6 py-4">
+                          <div className="text-sm text-gray-900">
+                            {request.applicationCount} Application{request.applicationCount !== 1 ? 's' : ''}
+                          </div>
+                        </td>
+                        <td className="px-6 py-4">
+                          <div className="flex flex-col space-y-1">
+                            <Badge 
+                              variant={getValidationBadgeVariant(validationSummary.preChange)} 
+                              className="text-xs w-fit"
+                            >
+                              {validationSummary.preChange}
+                            </Badge>
+                            <span className="text-xs text-gray-500">
+                              {validationSummary.preCompleted}/{validationSummary.totalApps}
+                            </span>
+                          </div>
+                        </td>
+                        <td className="px-6 py-4">
+                          <div className="flex flex-col space-y-1">
+                            <Badge 
+                              variant={getValidationBadgeVariant(validationSummary.postChange)} 
+                              className="text-xs w-fit"
+                            >
+                              {validationSummary.postChange}
+                            </Badge>
+                            <span className="text-xs text-gray-500">
+                              {validationSummary.postCompleted}/{validationSummary.totalApps}
+                            </span>
+                          </div>
+                        </td>
+                        <td className="px-6 py-4">
+                          <div className="text-sm text-gray-900">
+                            {format(new Date(request.startDateTime), "MMM dd, yyyy")}
+                          </div>
+                          <div className="text-sm text-gray-500">
+                            {format(new Date(request.startDateTime), "HH:mm")} - {format(new Date(request.endDateTime), "HH:mm")}
+                          </div>
+                        </td>
+                        <td className="px-6 py-4">
+                          <Link href={`/change-requests/${request.id}`}>
+                            <Button variant="ghost" size="sm">
+                              <ExternalLink className="h-4 w-4 mr-2" />
+                              View Details
+                            </Button>
+                          </Link>
+                        </td>
+                      </tr>
+                    );
+                  })
                 )}
               </tbody>
             </table>
