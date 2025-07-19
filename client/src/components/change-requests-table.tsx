@@ -287,11 +287,6 @@ export default function ChangeRequestsTable({
                           <div className="text-sm text-gray-900">
                             {app.application?.name || 'Unknown Application'}
                           </div>
-                          {app.application?.spoc && (
-                            <div className="text-xs text-gray-500">
-                              SPOC: {app.application.spoc.firstName}
-                            </div>
-                          )}
                         </td>
                         
                         {/* Pre-Application Checkout Status - individual per app */}
@@ -306,11 +301,6 @@ export default function ChangeRequestsTable({
                             {app.preChangeStatus === 'completed' ? 'Completed' :
                              app.preChangeStatus === 'not_applicable' ? 'N/A' : 'Pending'}
                           </Badge>
-                          {app.preChangeComments && (
-                            <div className="text-xs text-gray-500 mt-1 truncate max-w-32">
-                              {app.preChangeComments}
-                            </div>
-                          )}
                         </td>
                         
                         {/* Post-Application Checkout Status - individual per app */}
@@ -325,11 +315,6 @@ export default function ChangeRequestsTable({
                             {app.postChangeStatus === 'completed' ? 'Completed' :
                              app.postChangeStatus === 'not_applicable' ? 'N/A' : 'Pending'}
                           </Badge>
-                          {app.postChangeComments && (
-                            <div className="text-xs text-gray-500 mt-1 truncate max-w-32">
-                              {app.postChangeComments}
-                            </div>
-                          )}
                         </td>
                         
                         {/* Actions - only show on first row */}
