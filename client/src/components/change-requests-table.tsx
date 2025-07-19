@@ -22,9 +22,6 @@ export default function ChangeRequestsTable({
   const [searchQuery, setSearchQuery] = useState("");
   const [filterType, setFilterType] = useState("all");
 
-  console.log('Current filterType:', filterType);
-  console.log('Available changeTypes:', [...new Set(changeRequests.map(r => r.changeType))]);
-  
   const filteredRequests = changeRequests.filter((request) => {
     const matchesSearch = !searchQuery.trim() || 
       request.changeId.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -35,8 +32,6 @@ export default function ChangeRequestsTable({
     
     return matchesSearch && matchesType;
   });
-  
-  console.log(`Filtered ${filteredRequests.length} requests from ${changeRequests.length} total`);
 
   const getChangeTypeBadge = (type: string) => {
     const variants = {
@@ -174,10 +169,7 @@ export default function ChangeRequestsTable({
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
               </div>
               
-              <Select value={filterType} onValueChange={(value) => {
-                console.log('Filter changed to:', value);
-                setFilterType(value);
-              }}>
+              <Select value={filterType} onValueChange={setFilterType}>
                 <SelectTrigger className="w-full sm:w-40">
                   <SelectValue placeholder="Filter by Type" />
                 </SelectTrigger>
