@@ -167,6 +167,13 @@ Preferred communication style: Simple, everyday language.
   - **Pending**: When any application has validations awaiting action
   - Status is shown only on first row of each change request for clean display
 
+### Data Flow Architecture Fixed (January 19, 2025)
+- **Backend Storage Layer**: Fixed critical database column mapping issue using camelCase instead of snake_case
+- **API Response Structure**: Status fields (preChangeStatus, postChangeStatus) now properly flow from storage to frontend
+- **Frontend Status Calculation**: Summary header correctly processes status data to display accurate counts
+- **Real-time Status Updates**: System now displays correct statistics: 8 Completed, 11 In Progress, 3 Pending change requests
+- **Data Integrity**: Complete end-to-end data flow from PostgreSQL → Drizzle ORM → Express API → React Query → UI components
+
 ### Sample Data Created (January 19, 2025)
 - **Applications**: 10 diverse applications created for comprehensive testing
   - Customer Portal, Payment Gateway, Inventory Management, Email Service, Analytics Dashboard (SPOC: User 45228804)  
