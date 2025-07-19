@@ -181,22 +181,22 @@ export default function ChangeRequestsTable({
               <thead className="bg-gray-50">
                 <tr>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Change Request
+                    CR ID
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Type
+                    CR Description
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Applications
+                    Application Names
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Pre-Checkout
+                    Pre-Application Checkout Status
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Post-Checkout
+                    Post-Application Checkout Status
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Schedule
+                    Overall Status
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Actions
@@ -217,22 +217,47 @@ export default function ChangeRequestsTable({
                     
                     return (
                       <tr key={request.id} className="hover:bg-gray-50">
+                        {/* CR ID */}
                         <td className="px-6 py-4">
-                          <div>
-                            <div className="text-sm font-medium text-gray-900">{request.changeId}</div>
-                            <div className="text-sm text-gray-500">{request.title}</div>
+                          <div className="text-sm font-medium text-gray-900">{request.changeId}</div>
+                        </td>
+                        
+                        {/* CR Description */}
+                        <td className="px-6 py-4">
+                          <div className="text-sm text-gray-900">{request.title}</div>
+                          <div className="flex items-center space-x-2 mt-1">
+                            <Badge variant={getChangeTypeBadge(request.changeType)} className="text-xs">
+                              {request.changeType}
+                            </Badge>
+                            <span className="text-xs text-gray-500">
+                              {format(new Date(request.startDateTime), "MMM dd, HH:mm")}
+                            </span>
                           </div>
                         </td>
-                        <td className="px-6 py-4">
-                          <Badge variant={getChangeTypeBadge(request.changeType)}>
-                            {request.changeType}
-                          </Badge>
-                        </td>
+                        
+                        {/* Application Names */}
                         <td className="px-6 py-4">
                           <div className="text-sm text-gray-900">
-                            {request.applicationCount} Application{request.applicationCount !== 1 ? 's' : ''}
+                            {request.applications && request.applications.length > 0 ? (
+                              <div className="space-y-1">
+                                {request.applications.slice(0, 3).map((app, index) => (
+                                  <div key={index} className="text-xs">
+                                    {app.application?.name || 'Unknown Application'}
+                                  </div>
+                                ))}
+                                {request.applications.length > 3 && (
+                                  <div className="text-xs text-gray-500">
+                                    +{request.applications.length - 3} more
+                                  </div>
+                                )}
+                              </div>
+                            ) : (
+                              <span className="text-sm text-gray-500">No applications</span>
+                            )}
                           </div>
                         </td>
+                        
+                        {/* Pre-Application Checkout Status */}
                         <td className="px-6 py-4">
                           <div className="flex flex-col space-y-1">
                             <Badge 
@@ -246,6 +271,8 @@ export default function ChangeRequestsTable({
                             </span>
                           </div>
                         </td>
+                        
+                        {/* Post-Application Checkout Status */}
                         <td className="px-6 py-4">
                           <div className="flex flex-col space-y-1">
                             <Badge 
@@ -259,14 +286,18 @@ export default function ChangeRequestsTable({
                             </span>
                           </div>
                         </td>
+                        
+                        {/* Overall Status */}
                         <td className="px-6 py-4">
-                          <div className="text-sm text-gray-900">
-                            {format(new Date(request.startDateTime), "MMM dd, yyyy")}
-                          </div>
-                          <div className="text-sm text-gray-500">
-                            {format(new Date(request.startDateTime), "HH:mm")} - {format(new Date(request.endDateTime), "HH:mm")}
-                          </div>
+                          <Badge 
+                            variant={request.status === 'completed' ? 'secondary' : request.status === 'active' ? 'default' : 'outline'}
+                            className="capitalize"
+                          >
+                            {request.status}
+                          </Badge>
                         </td>
+                        
+                        {/* Actions */}
                         <td className="px-6 py-4">
                           <Link href={`/change-requests/${request.id}`}>
                             <Button variant="ghost" size="sm">

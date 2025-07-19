@@ -147,10 +147,13 @@ Preferred communication style: Simple, everyday language.
 ## Current Application State
 
 ### Enhanced Dashboard Features (January 19, 2025)
-- **Pre-Checkout and Post-Checkout Status Columns**: Main dashboard displays validation status with:
-  - Application count showing total number of applications per change request
-  - Pre-checkout validation status with completion counts (e.g., "3/5")
-  - Post-checkout validation status with completion counts
+- **Redesigned Table Headers**: Main dashboard now displays with structured columns:
+  - **CR ID**: Change request identifier
+  - **CR Description**: Title with change type badge and schedule information
+  - **Application Names**: List of assigned applications (up to 3 shown, with "+X more" indicator)
+  - **Pre-Application Checkout Status**: Status badge and completion count (e.g., "3/5")
+  - **Post-Application Checkout Status**: Status badge and completion count
+  - **Overall Status**: Change request status (Active, Completed, Scheduled, etc.)
   - Color-coded badges: Gray for Completed, Blue for In Progress, Light Gray for Pending, Gray for N/A
   - Support for "Not Applicable" status handling
 
