@@ -28,8 +28,8 @@ export default function ChangeRequestsTable({
       request.changeId.toLowerCase().includes(searchQuery.toLowerCase()) ||
       request.title.toLowerCase().includes(searchQuery.toLowerCase());
     
-    const matchesType = !filterType || request.changeType === filterType;
-    const matchesStatus = !filterStatus || request.status === filterStatus;
+    const matchesType = !filterType || filterType === 'all' || request.changeType === filterType;
+    const matchesStatus = !filterStatus || filterStatus === 'all' || request.status === filterStatus;
 
     return matchesSearch && matchesType && matchesStatus;
   });
@@ -126,7 +126,7 @@ export default function ChangeRequestsTable({
                   <SelectValue placeholder="Change Type" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">All Types</SelectItem>
+                  <SelectItem value="all">All Types</SelectItem>
                   <SelectItem value="P1">P1</SelectItem>
                   <SelectItem value="P2">P2</SelectItem>
                   <SelectItem value="Emergency">Emergency</SelectItem>
@@ -139,7 +139,7 @@ export default function ChangeRequestsTable({
                   <SelectValue placeholder="Status" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">All Status</SelectItem>
+                  <SelectItem value="all">All Status</SelectItem>
                   <SelectItem value="active">Active</SelectItem>
                   <SelectItem value="scheduled">Scheduled</SelectItem>
                   <SelectItem value="in_progress">In Progress</SelectItem>
