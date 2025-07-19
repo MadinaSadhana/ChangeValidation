@@ -167,27 +167,33 @@ export class DatabaseStorage implements IStorage {
   }
 
   async getChangeRequestApplications(changeRequestId: number): Promise<ChangeRequestApplication[]> {
-    return await db
-      .select({
-        applicationId: changeRequestApplications.applicationId,
-        changeRequestId: changeRequestApplications.changeRequestId,
-        preChangeStatus: changeRequestApplications.preChangeStatus,
-        postChangeStatus: changeRequestApplications.postChangeStatus,
-        preChangeComment: changeRequestApplications.preChangeComment,
-        postChangeComment: changeRequestApplications.postChangeComment,
-        preChangeUpdatedAt: changeRequestApplications.preChangeUpdatedAt,
-        postChangeUpdatedAt: changeRequestApplications.postChangeUpdatedAt,
-        application: {
-          id: applications.id,
-          name: applications.name,
-          spocId: applications.spocId,
-          createdAt: applications.createdAt,
-          updatedAt: applications.updatedAt
-        }
-      })
+    const results = await db
+      .select()
       .from(changeRequestApplications)
       .innerJoin(applications, eq(changeRequestApplications.applicationId, applications.id))
       .where(eq(changeRequestApplications.changeRequestId, changeRequestId));
+
+    return results.map((result: any) => ({
+      id: result.change_request_applications.id,
+      applicationId: result.change_request_applications.application_id,
+      changeRequestId: result.change_request_applications.change_request_id,
+      preChangeStatus: result.change_request_applications.pre_change_status,
+      postChangeStatus: result.change_request_applications.post_change_status,
+      preChangeComments: result.change_request_applications.pre_change_comments,
+      postChangeComments: result.change_request_applications.post_change_comments,
+      preChangeAttachments: result.change_request_applications.pre_change_attachments,
+      postChangeAttachments: result.change_request_applications.post_change_attachments,
+      preChangeUpdatedAt: result.change_request_applications.pre_change_updated_at,
+      postChangeUpdatedAt: result.change_request_applications.post_change_updated_at,
+      createdAt: result.change_request_applications.created_at,
+      application: {
+        id: result.applications.id,
+        name: result.applications.name,
+        description: result.applications.description,
+        spocId: result.applications.spoc_id,
+        createdAt: result.applications.created_at
+      }
+    }));
   }
 
   async createChangeRequestApplication(cra: InsertChangeRequestApplication): Promise<ChangeRequestApplication> {
