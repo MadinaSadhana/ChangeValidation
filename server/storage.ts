@@ -14,7 +14,7 @@ import {
   type UpdateValidation,
 } from "@shared/schema";
 import { db } from "./db";
-import { eq, and, desc, asc, or, like, count } from "drizzle-orm";
+import { eq, and, desc, asc, or, like, count, lt } from "drizzle-orm";
 
 export interface IStorage {
   // User operations (mandatory for Replit Auth)
@@ -152,7 +152,7 @@ export class DatabaseStorage implements IStorage {
     }
 
     if (conditions.length > 0) {
-      query = query.where(and(...conditions));
+      query = query.where(and(...conditions)) as any;
     }
 
     return await query.orderBy(desc(changeRequests.createdAt));
@@ -177,7 +177,7 @@ export class DatabaseStorage implements IStorage {
   async getChangeRequestApplications(changeRequestId: number): Promise<(ChangeRequestApplication & {
     application: Application & { spoc: User | null };
   })[]> {
-    return await db
+    const result = await db
       .select({
         id: changeRequestApplications.id,
         changeRequestId: changeRequestApplications.changeRequestId,
@@ -191,29 +191,57 @@ export class DatabaseStorage implements IStorage {
         preChangeUpdatedAt: changeRequestApplications.preChangeUpdatedAt,
         postChangeUpdatedAt: changeRequestApplications.postChangeUpdatedAt,
         createdAt: changeRequestApplications.createdAt,
-        application: {
-          id: applications.id,
-          name: applications.name,
-          description: applications.description,
-          spocId: applications.spocId,
-          createdAt: applications.createdAt,
-          spoc: {
-            id: users.id,
-            email: users.email,
-            firstName: users.firstName,
-            lastName: users.lastName,
-            profileImageUrl: users.profileImageUrl,
-            role: users.role,
-            createdAt: users.createdAt,
-            updatedAt: users.updatedAt,
-          },
-        },
+        appId: applications.id,
+        applicationName: applications.name,
+        applicationDescription: applications.description,
+        applicationSpocId: applications.spocId,
+        applicationCreatedAt: applications.createdAt,
+        spocId: users.id,
+        spocEmail: users.email,
+        spocFirstName: users.firstName,
+        spocLastName: users.lastName,
+        spocProfileImageUrl: users.profileImageUrl,
+        spocRole: users.role,
+        spocCreatedAt: users.createdAt,
+        spocUpdatedAt: users.updatedAt,
       })
       .from(changeRequestApplications)
       .innerJoin(applications, eq(changeRequestApplications.applicationId, applications.id))
       .leftJoin(users, eq(applications.spocId, users.id))
       .where(eq(changeRequestApplications.changeRequestId, changeRequestId))
       .orderBy(asc(applications.name));
+
+    return result.map(row => ({
+      id: row.id,
+      changeRequestId: row.changeRequestId,
+      applicationId: row.applicationId,
+      preChangeStatus: row.preChangeStatus,
+      postChangeStatus: row.postChangeStatus,
+      preChangeComments: row.preChangeComments,
+      postChangeComments: row.postChangeComments,
+      preChangeAttachments: row.preChangeAttachments,
+      postChangeAttachments: row.postChangeAttachments,
+      postChangeUpdatedAt: row.postChangeUpdatedAt,
+      preChangeUpdatedAt: row.preChangeUpdatedAt,
+      createdAt: row.createdAt,
+      application: {
+        id: row.appId,
+        name: row.applicationName,
+        description: row.applicationDescription,
+        spocId: row.applicationSpocId,
+        createdAt: row.applicationCreatedAt,
+        spoc: row.spocId ? {
+          id: row.spocId,
+          email: row.spocEmail,
+          firstName: row.spocFirstName,
+          lastName: row.spocLastName,
+          profileImageUrl: row.spocProfileImageUrl,
+          role: row.spocRole || 'application_owner',
+          createdAt: row.spocCreatedAt,
+          updatedAt: row.spocUpdatedAt,
+        } : null,
+      },
+    }));
   }
 
   async getChangeRequestApplicationsBySpoc(spocId: string): Promise<(ChangeRequestApplication & {
@@ -378,7 +406,7 @@ export class DatabaseStorage implements IStorage {
             eq(changeRequestApplications.postChangeStatus, "pending")
           ),
           // Consider overdue if change window has passed
-          new Date() > changeRequests.endDateTime
+          lt(changeRequests.endDateTime, new Date())
         )
       );
 

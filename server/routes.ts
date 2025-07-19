@@ -166,7 +166,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (error instanceof ZodError) {
         return res.status(400).json({ message: "Invalid data", errors: error.errors });
       }
-      if (error.message === "Unauthorized to update this application") {
+      if (error instanceof Error && error.message === "Unauthorized to update this application") {
         return res.status(403).json({ message: error.message });
       }
       console.error("Error updating validation status:", error);

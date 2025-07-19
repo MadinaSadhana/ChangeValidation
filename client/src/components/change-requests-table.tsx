@@ -82,12 +82,12 @@ export default function ChangeRequestsTable({
                 <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
               </div>
               
-              <Select value={filterType} onValueChange={setFilterType}>
+              <Select value={filterType || "all"} onValueChange={(value) => setFilterType(value === "all" ? "" : value)}>
                 <SelectTrigger className="w-full sm:w-40">
                   <SelectValue placeholder="All Types" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">All Types</SelectItem>
+                  <SelectItem value="all">All Types</SelectItem>
                   <SelectItem value="P1">P1 - Critical</SelectItem>
                   <SelectItem value="P2">P2 - High</SelectItem>
                   <SelectItem value="Emergency">Emergency</SelectItem>
@@ -95,12 +95,12 @@ export default function ChangeRequestsTable({
                 </SelectContent>
               </Select>
               
-              <Select value={filterStatus} onValueChange={setFilterStatus}>
+              <Select value={filterStatus || "all"} onValueChange={(value) => setFilterStatus(value === "all" ? "" : value)}>
                 <SelectTrigger className="w-full sm:w-40">
                   <SelectValue placeholder="All Statuses" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">All Statuses</SelectItem>
+                  <SelectItem value="all">All Statuses</SelectItem>
                   <SelectItem value="active">Active</SelectItem>
                   <SelectItem value="completed">Completed</SelectItem>
                   <SelectItem value="cancelled">Cancelled</SelectItem>
