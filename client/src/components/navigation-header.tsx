@@ -4,7 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { Bell, ChevronDown } from "lucide-react";
 import { Link, useLocation } from "wouter";
 import { useMutation } from "@tanstack/react-query";
-import { apiRequest } from "@/lib/queryClient";
+import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import {
   DropdownMenu,
@@ -23,11 +23,18 @@ export default function NavigationHeader() {
       return apiRequest("POST", "/api/simple-logout");
     },
     onSuccess: () => {
+      // Invalidate auth queries so useAuth can detect the logout
+      queryClient.invalidateQueries({ queryKey: ["/api/auth/user"] });
+      
       toast({
-        title: "Logged Out",
+        title: "Logged Out", 
         description: "You have been successfully logged out.",
       });
-      window.location.href = "/";
+      
+      // Use a slight delay to ensure the auth state is refreshed
+      setTimeout(() => {
+        window.location.href = "/";
+      }, 100);
     },
     onError: () => {
       toast({

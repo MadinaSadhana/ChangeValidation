@@ -6,7 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Label } from "@/components/ui/label";
 import { Building2, LogIn } from "lucide-react";
 import { useMutation } from "@tanstack/react-query";
-import { apiRequest } from "@/lib/queryClient";
+import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 
 export default function SimpleLogin() {
@@ -19,11 +19,18 @@ export default function SimpleLogin() {
       return apiRequest("POST", "/api/simple-login", { name });
     },
     onSuccess: () => {
+      // Invalidate auth queries so useAuth can detect the new authentication state
+      queryClient.invalidateQueries({ queryKey: ["/api/auth/user"] });
+      
       toast({
         title: "Login Successful",
         description: "Welcome to Change Request Management System",
       });
-      setLocation("/");
+      
+      // Use a slight delay to ensure the auth state is refreshed
+      setTimeout(() => {
+        setLocation("/");
+      }, 100);
     },
     onError: (error) => {
       toast({
