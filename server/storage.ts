@@ -94,49 +94,13 @@ export class DatabaseStorage implements IStorage {
 
   // Change request operations
   async getChangeRequests(filters: any = {}): Promise<ChangeRequest[]> {
+    // First get all change requests
     let query = db
-      .select({
-        id: changeRequests.id,
-        changeId: changeRequests.changeId,
-        title: changeRequests.title,
-        description: changeRequests.description,
-        changeType: changeRequests.changeType,
-        scheduledStartTime: changeRequests.scheduledStartTime,
-        scheduledEndTime: changeRequests.scheduledEndTime,
-        status: changeRequests.status,
-        createdAt: changeRequests.createdAt,
-        updatedAt: changeRequests.updatedAt,
-        applications: sql<ChangeRequestApplication[]>`
-          json_agg(
-            json_build_object(
-              'applicationId', ${changeRequestApplications.applicationId},
-              'changeRequestId', ${changeRequestApplications.changeRequestId},
-              'preChangeStatus', ${changeRequestApplications.preChangeStatus},
-              'postChangeStatus', ${changeRequestApplications.postChangeStatus},
-              'preChangeComment', ${changeRequestApplications.preChangeComment},
-              'postChangeComment', ${changeRequestApplications.postChangeComment},
-              'preChangeUpdatedAt', ${changeRequestApplications.preChangeUpdatedAt},
-              'postChangeUpdatedAt', ${changeRequestApplications.postChangeUpdatedAt},
-              'application', json_build_object(
-                'id', ${applications.id},
-                'name', ${applications.name},
-                'spocId', ${applications.spocId}
-              )
-            )
-          )
-        `
-      })
-      .from(changeRequests)
-      .leftJoin(changeRequestApplications, eq(changeRequests.id, changeRequestApplications.changeRequestId))
-      .leftJoin(applications, eq(changeRequestApplications.applicationId, applications.id))
-      .groupBy(changeRequests.id);
+      .select()
+      .from(changeRequests);
 
-    // Apply filters
+    // Apply basic filters
     const conditions = [];
-
-    if (filters.spocId) {
-      conditions.push(eq(applications.spocId, filters.spocId));
-    }
 
     if (filters.search) {
       conditions.push(
@@ -160,10 +124,30 @@ export class DatabaseStorage implements IStorage {
 
     const results = await query;
     
-    return results.map(result => ({
-      ...result,
-      applications: result.applications?.filter(app => app.applicationId !== null) || []
-    }));
+    // Get applications for each change request
+    const changeRequestsWithApps = await Promise.all(
+      results.map(async (cr) => {
+        const apps = await this.getChangeRequestApplications(cr.id);
+        
+        // Apply SPOC filter if needed
+        let filteredApps = apps;
+        if (filters.spocId) {
+          filteredApps = apps.filter(app => app.application.spocId === filters.spocId);
+        }
+        
+        return {
+          ...cr,
+          applications: filteredApps
+        };
+      })
+    );
+
+    // If SPOC filter is applied, only return change requests that have applications for that SPOC
+    if (filters.spocId) {
+      return changeRequestsWithApps.filter(cr => cr.applications && cr.applications.length > 0);
+    }
+
+    return changeRequestsWithApps;
   }
 
   async getChangeRequestById(id: number): Promise<ChangeRequest | undefined> {
