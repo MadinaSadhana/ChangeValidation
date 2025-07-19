@@ -149,13 +149,17 @@ Preferred communication style: Simple, everyday language.
 ### Enhanced Dashboard Features (January 19, 2025)
 - **Application-Split Table Structure**: Main dashboard now displays one row per application per change request:
   - **CR ID**: Change request identifier (shown only on first application row)
-  - **Priority**: Change type badge showing priority level (P1, P2, Emergency, Standard)
   - **CR Description**: Title with schedule information (shown only on first application row)
+  - **Priority**: Change type badge showing priority level (P1, P2, Emergency, Standard) - positioned as 3rd column
+  - **Overall Status**: Calculated status per change request showing completion progress
   - **Application Name**: Individual application name only
   - **Pre-Application Checkout Status**: Individual application pre-change validation status badge only
   - **Post-Application Checkout Status**: Individual application post-change validation status badge only
+  - **Actions**: Sticky column with View Details buttons for navigation
   - Color-coded badges: Gray for Completed, Blue for In Progress, Light Gray for Pending, Gray for N/A
   - Support for "Not Applicable" status handling with individual application-level tracking
+- **Simplified Layout**: Removed CR Creation Date and CR Completion Date columns from main view for cleaner display
+- **Application Owner Information**: Available in View Details page only, not cluttering main dashboard table
 - **Overall Status Summary Header**: Enhanced summary cards showing total change requests and overall completion status:
   - **In Progress Status**: Change requests with validations currently being worked on (orange indicators with animated pulse)
   - **Pending Status**: Change requests with validations awaiting action (yellow indicators)  
