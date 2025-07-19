@@ -9,8 +9,25 @@ interface ChangeRequest {
   changeType: string;
   status: string;
   applications: Array<{
+    id: number;
+    applicationId: number;
+    changeRequestId: number;
     preChangeStatus: string;
     postChangeStatus: string;
+    preChangeComments?: string;
+    postChangeComments?: string;
+    preChangeAttachments?: string[];
+    postChangeAttachments?: string[];
+    preChangeUpdatedAt?: string;
+    postChangeUpdatedAt?: string;
+    createdAt?: string;
+    application: {
+      id: number;
+      name: string;
+      description?: string;
+      spocId?: string;
+      createdAt?: string;
+    };
   }>;
 }
 
@@ -20,6 +37,25 @@ interface SummaryHeaderProps {
 }
 
 export default function SummaryHeader({ changeRequests, isLoading }: SummaryHeaderProps) {
+  // Debug logging - only log if we have data
+  if (changeRequests && changeRequests.length > 0) {
+    console.log('SummaryHeader - received', changeRequests.length, 'change requests');
+    
+    // Check the first application in the first change request to see if status fields are present
+    const firstCR = changeRequests[0];
+    if (firstCR.applications && firstCR.applications.length > 0) {
+      const firstApp = firstCR.applications[0];
+      console.log('First application status check:', {
+        appName: firstApp.application?.name,
+        preChangeStatus: firstApp.preChangeStatus,
+        postChangeStatus: firstApp.postChangeStatus,
+        hasStatusFields: !!firstApp.preChangeStatus && !!firstApp.postChangeStatus
+      });
+    }
+  } else {
+    console.log('SummaryHeader - no data yet, isLoading:', isLoading);
+  }
+  
   if (isLoading) {
     return (
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
@@ -39,7 +75,10 @@ export default function SummaryHeader({ changeRequests, isLoading }: SummaryHead
 
   // Calculate overall status for each change request
   const calculateOverallStatus = (request: ChangeRequest) => {
+    console.log('Calculating status for:', request.changeId, 'Applications:', request.applications);
+    
     if (!request.applications || request.applications.length === 0) {
+      console.log('No applications found for:', request.changeId);
       return 'pending'; // No applications means incomplete
     }
 
@@ -50,6 +89,13 @@ export default function SummaryHeader({ changeRequests, isLoading }: SummaryHead
     for (const app of request.applications) {
       const preStatus = app.preChangeStatus;
       const postStatus = app.postChangeStatus;
+      
+      console.log('App statuses:', { 
+        appId: app.id, 
+        applicationName: app.application?.name,
+        preStatus, 
+        postStatus 
+      });
 
       // Check if any validation is in progress
       if (preStatus === 'in_progress' || postStatus === 'in_progress') {
@@ -69,15 +115,14 @@ export default function SummaryHeader({ changeRequests, isLoading }: SummaryHead
       }
     }
 
-    if (allCompleted) return 'completed';
-    if (hasInProgress) return 'in_progress';
-    if (hasPending) return 'pending';
-    return 'pending';
+    const calculatedStatus = allCompleted ? 'completed' : hasInProgress ? 'in_progress' : 'pending';
+    console.log('Calculated status for', request.changeId, ':', calculatedStatus);
+    return calculatedStatus;
   };
 
   // Calculate statistics
-  const totalRequests = changeRequests.length;
-  const statusCounts = changeRequests.reduce(
+  const totalRequests = changeRequests?.length || 0;
+  const statusCounts = (changeRequests || []).reduce(
     (acc, request) => {
       const status = calculateOverallStatus(request);
       acc[status]++;
@@ -85,6 +130,8 @@ export default function SummaryHeader({ changeRequests, isLoading }: SummaryHead
     },
     { completed: 0, in_progress: 0, pending: 0 }
   );
+  
+  console.log('Final status counts:', statusCounts);
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">

@@ -167,33 +167,53 @@ export class DatabaseStorage implements IStorage {
   }
 
   async getChangeRequestApplications(changeRequestId: number): Promise<ChangeRequestApplication[]> {
+    console.log('Getting change request applications for CR ID:', changeRequestId);
+    
     const results = await db
       .select()
       .from(changeRequestApplications)
       .innerJoin(applications, eq(changeRequestApplications.applicationId, applications.id))
       .where(eq(changeRequestApplications.changeRequestId, changeRequestId));
 
-    return results.map((result: any) => ({
-      id: result.change_request_applications.id,
-      applicationId: result.change_request_applications.application_id,
-      changeRequestId: result.change_request_applications.change_request_id,
-      preChangeStatus: result.change_request_applications.pre_change_status,
-      postChangeStatus: result.change_request_applications.post_change_status,
-      preChangeComments: result.change_request_applications.pre_change_comments,
-      postChangeComments: result.change_request_applications.post_change_comments,
-      preChangeAttachments: result.change_request_applications.pre_change_attachments,
-      postChangeAttachments: result.change_request_applications.post_change_attachments,
-      preChangeUpdatedAt: result.change_request_applications.pre_change_updated_at,
-      postChangeUpdatedAt: result.change_request_applications.post_change_updated_at,
-      createdAt: result.change_request_applications.created_at,
-      application: {
-        id: result.applications.id,
-        name: result.applications.name,
-        description: result.applications.description,
-        spocId: result.applications.spoc_id,
-        createdAt: result.applications.created_at
-      }
-    }));
+    console.log('Raw DB results:', results.length, 'items');
+    if (results.length > 0) {
+      console.log('First result structure:', JSON.stringify(results[0], null, 2));
+    }
+
+    const mappedResults = results.map((result: any) => {
+      const mapped = {
+        id: result.change_request_applications.id,
+        applicationId: result.change_request_applications.applicationId,
+        changeRequestId: result.change_request_applications.changeRequestId,
+        preChangeStatus: result.change_request_applications.preChangeStatus,
+        postChangeStatus: result.change_request_applications.postChangeStatus,
+        preChangeComments: result.change_request_applications.preChangeComments,
+        postChangeComments: result.change_request_applications.postChangeComments,
+        preChangeAttachments: result.change_request_applications.preChangeAttachments,
+        postChangeAttachments: result.change_request_applications.postChangeAttachments,
+        preChangeUpdatedAt: result.change_request_applications.preChangeUpdatedAt,
+        postChangeUpdatedAt: result.change_request_applications.postChangeUpdatedAt,
+        createdAt: result.change_request_applications.createdAt,
+        application: {
+          id: result.applications.id,
+          name: result.applications.name,
+          description: result.applications.description,
+          spocId: result.applications.spocId,
+          createdAt: result.applications.createdAt
+        }
+      };
+      
+      console.log('✓ Mapped result for app', mapped.application.name, ':', {
+        preChangeStatus: mapped.preChangeStatus,
+        postChangeStatus: mapped.postChangeStatus,
+        statusesExist: !!mapped.preChangeStatus && !!mapped.postChangeStatus
+      });
+      
+      return mapped;
+    });
+
+    console.log('Returning', mappedResults.length, 'mapped applications');
+    return mappedResults;
   }
 
   async createChangeRequestApplication(cra: InsertChangeRequestApplication): Promise<ChangeRequestApplication> {
