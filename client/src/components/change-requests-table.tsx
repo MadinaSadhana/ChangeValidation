@@ -43,6 +43,37 @@ export default function ChangeRequestsTable({
     return variants[type as keyof typeof variants] || "secondary";
   };
 
+  const getCompletionDate = (request: any) => {
+    if (!request.applications || request.applications.length === 0) {
+      return null;
+    }
+
+    // Check if all applications have both pre and post status completed
+    const allCompleted = request.applications.every((app: any) => 
+      app.preChangeStatus === 'completed' && app.postChangeStatus === 'completed'
+    );
+
+    if (!allCompleted) {
+      return null;
+    }
+
+    // Find the latest completion date among all applications
+    let latestDate = null;
+    for (const app of request.applications) {
+      const preDate = app.preChangeUpdatedAt ? new Date(app.preChangeUpdatedAt) : null;
+      const postDate = app.postChangeUpdatedAt ? new Date(app.postChangeUpdatedAt) : null;
+      
+      if (preDate && (!latestDate || preDate > latestDate)) {
+        latestDate = preDate;
+      }
+      if (postDate && (!latestDate || postDate > latestDate)) {
+        latestDate = postDate;
+      }
+    }
+
+    return latestDate;
+  };
+
   const getValidationSummary = (applications: any[]) => {
     if (!applications || applications.length === 0) {
       return {
@@ -219,6 +250,12 @@ export default function ChangeRequestsTable({
                     CR Description
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Creation Date
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Completion Date
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Overall Status
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -238,7 +275,7 @@ export default function ChangeRequestsTable({
               <tbody className="bg-white divide-y divide-gray-200">
                 {filteredRequests.length === 0 ? (
                   <tr>
-                    <td colSpan={8} className="px-6 py-8 text-center text-gray-500">
+                    <td colSpan={10} className="px-6 py-8 text-center text-gray-500">
                       No change requests found matching your criteria.
                     </td>
                   </tr>
@@ -258,6 +295,14 @@ export default function ChangeRequestsTable({
                           </td>
                           <td className="px-6 py-4">
                             <div className="text-sm text-gray-900">{request.title}</div>
+                          </td>
+                          <td className="px-6 py-4">
+                            <div className="text-xs text-gray-600">
+                              {format(new Date(request.createdAt), "MMM dd, yyyy")}
+                            </div>
+                          </td>
+                          <td className="px-6 py-4">
+                            <span className="text-xs text-gray-500">-</span>
                           </td>
                           <td className="px-6 py-4">
                             <Badge variant="outline" className="text-xs text-gray-500">
@@ -309,6 +354,29 @@ export default function ChangeRequestsTable({
                           {index === 0 && (
                             <div className="text-sm text-gray-900">{request.title}</div>
                           )}
+                        </td>
+                        
+                        {/* Creation Date - only show on first row */}
+                        <td className="px-6 py-4">
+                          {index === 0 && (
+                            <div className="text-xs text-gray-600">
+                              {format(new Date(request.createdAt), "MMM dd, yyyy")}
+                            </div>
+                          )}
+                        </td>
+                        
+                        {/* Completion Date - only show on first row */}
+                        <td className="px-6 py-4">
+                          {index === 0 && (() => {
+                            const completionDate = getCompletionDate(request);
+                            return completionDate ? (
+                              <div className="text-xs text-green-600">
+                                {format(completionDate, "MMM dd, yyyy")}
+                              </div>
+                            ) : (
+                              <span className="text-xs text-gray-500">-</span>
+                            );
+                          })()}
                         </td>
                         
                         {/* Overall Status - only show on first row */}
