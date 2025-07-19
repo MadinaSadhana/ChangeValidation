@@ -4,7 +4,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
 import { isUnauthorizedError } from "@/lib/authUtils";
 import NavigationHeader from "@/components/navigation-header";
-
+import SummaryHeader from "@/components/summary-header";
 import ChangeRequestsTable from "@/components/change-requests-table";
 import CreateChangeRequestModal from "@/components/create-change-request-modal";
 import { useState } from "react";
@@ -80,6 +80,12 @@ export default function Dashboard() {
             )}
           </div>
         </div>
+
+        {/* Summary Header */}
+        <SummaryHeader 
+          changeRequests={changeRequests || []}
+          isLoading={requestsLoading}
+        />
 
         {/* Change Requests Table */}
         <ChangeRequestsTable 

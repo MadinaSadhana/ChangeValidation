@@ -156,7 +156,11 @@ Preferred communication style: Simple, everyday language.
   - **Post-Application Checkout Status**: Individual application post-change validation status badge only
   - Color-coded badges: Gray for Completed, Blue for In Progress, Light Gray for Pending, Gray for N/A
   - Support for "Not Applicable" status handling with individual application-level tracking
-- **Removed Summary Header**: Statistics cards section removed from dashboard for cleaner interface focus on change request table
+- **RAG Status Summary Header**: Enhanced summary cards showing total change requests and RAG (Red-Amber-Green) status based on Pre/Post Application checkout status:
+  - **Red Status**: Change requests with validations in progress (active work required)
+  - **Amber Status**: Change requests with pending validations (awaiting action)  
+  - **Green Status**: Change requests with all validations completed or marked not applicable
+  - Total count display with color-coded status indicators and descriptive badges
 
 ### Sample Data Created (January 19, 2025)
 - **Applications**: 10 diverse applications created for comprehensive testing
