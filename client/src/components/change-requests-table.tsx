@@ -237,7 +237,7 @@ export default function ChangeRequestsTable({
         </CardHeader>
         <CardContent>
           <div className="overflow-x-auto">
-            <table className="min-w-full divide-y divide-gray-200">
+            <table className="min-w-full divide-y divide-gray-200" style={{ minWidth: '1200px' }}>
               <thead className="bg-gray-50">
                 <tr>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -275,7 +275,7 @@ export default function ChangeRequestsTable({
               <tbody className="bg-white divide-y divide-gray-200">
                 {filteredRequests.length === 0 ? (
                   <tr>
-                    <td colSpan={10} className="px-6 py-8 text-center text-gray-500">
+                    <td colSpan={11} className="px-6 py-8 text-center text-gray-500">
                       No change requests found matching your criteria.
                     </td>
                   </tr>
@@ -320,7 +320,7 @@ export default function ChangeRequestsTable({
                           </td>
                           <td className="px-6 py-4">
                             <Link href={`/change-requests/${request.id}`}>
-                              <Button variant="ghost" size="sm">
+                              <Button variant="ghost" size="sm" className="text-blue-600 hover:text-blue-800 hover:bg-blue-50">
                                 <ExternalLink className="h-4 w-4 mr-2" />
                                 View Details
                               </Button>
@@ -442,7 +442,7 @@ export default function ChangeRequestsTable({
                         <td className="px-6 py-4">
                           {index === 0 && (
                             <Link href={`/change-requests/${request.id}`}>
-                              <Button variant="ghost" size="sm">
+                              <Button variant="ghost" size="sm" className="text-blue-600 hover:text-blue-800 hover:bg-blue-50">
                                 <ExternalLink className="h-4 w-4 mr-2" />
                                 View Details
                               </Button>
