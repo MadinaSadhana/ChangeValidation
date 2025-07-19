@@ -175,9 +175,12 @@ Preferred communication style: Simple, everyday language.
 - **Data Integrity**: Complete end-to-end data flow from PostgreSQL → Drizzle ORM → Express API → React Query → UI components
 
 ### Sample Data Created (January 19, 2025)
-- **Applications**: 10 diverse applications created for comprehensive testing
-  - Customer Portal, Payment Gateway, Inventory Management, Email Service, Analytics Dashboard (SPOC: User 45228804)  
-  - Mobile App Backend, Notification Service, File Storage System, Audit Logging Service, Third-party Integration Hub (SPOC: User 44316444)
+- **Applications**: 15 diverse applications with realistic SPOC assignments
+  - Customer Portal, Payment Gateway, Analytics Dashboard (SPOC: Sarah Johnson)  
+  - Inventory Management System, Email Service Platform, Mobile App Backend (SPOC: David Martinez)
+  - Notification Service, File Storage System, Content Management System (SPOC: Emily Thompson)
+  - Audit Logging Service, Third-party Integration Hub, User Authentication Service (SPOC: Robert Williams)
+  - Database Management Portal, API Gateway, Monitoring & Alerting System (SPOC: Jessica Davis)
 
 - **Change Requests**: 14 comprehensive change requests demonstrating all scenarios
   - **Emergency**: CR-2025-001237 (SQL Injection Hotfix), CR-2025-001255 (Critical Performance Fix - In Progress)
