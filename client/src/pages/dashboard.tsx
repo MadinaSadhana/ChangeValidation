@@ -62,7 +62,7 @@ export default function Dashboard() {
               </h2>
               <p className="text-gray-600">
                 {isChangeManager 
-                  ? "Monitor and manage change requests and validation statuses"
+                  ? "Monitor and manage change requests and Application Checkout validation statuses"
                   : "View your assigned change requests and update validation statuses"
                 }
               </p>
