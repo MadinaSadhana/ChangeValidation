@@ -21,7 +21,6 @@ export default function ChangeRequestsTable({
 }: ChangeRequestsTableProps) {
   const [searchQuery, setSearchQuery] = useState("");
   const [filterType, setFilterType] = useState("");
-  const [filterStatus, setFilterStatus] = useState("");
 
   const filteredRequests = changeRequests.filter((request) => {
     const matchesSearch = !searchQuery || 
@@ -29,9 +28,8 @@ export default function ChangeRequestsTable({
       request.title.toLowerCase().includes(searchQuery.toLowerCase());
     
     const matchesType = !filterType || filterType === 'all' || request.changeType === filterType;
-    const matchesStatus = !filterStatus || filterStatus === 'all' || request.status === filterStatus;
 
-    return matchesSearch && matchesType && matchesStatus;
+    return matchesSearch && matchesType;
   });
 
   const getChangeTypeBadge = (type: string) => {
@@ -136,20 +134,6 @@ export default function ChangeRequestsTable({
                   <SelectItem value="P2">P2</SelectItem>
                   <SelectItem value="Emergency">Emergency</SelectItem>
                   <SelectItem value="Standard">Standard</SelectItem>
-                </SelectContent>
-              </Select>
-
-              <Select value={filterStatus} onValueChange={setFilterStatus}>
-                <SelectTrigger className="w-full sm:w-40">
-                  <SelectValue placeholder="Status" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Status</SelectItem>
-                  <SelectItem value="active">Active</SelectItem>
-                  <SelectItem value="scheduled">Scheduled</SelectItem>
-                  <SelectItem value="in_progress">In Progress</SelectItem>
-                  <SelectItem value="completed">Completed</SelectItem>
-                  <SelectItem value="cancelled">Cancelled</SelectItem>
                 </SelectContent>
               </Select>
             </div>
