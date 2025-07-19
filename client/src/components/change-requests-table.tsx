@@ -250,10 +250,10 @@ export default function ChangeRequestsTable({
                     CR Description
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Creation Date
+                    Assigned on
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Completion Date
+                    Closed on
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Overall Status
@@ -356,7 +356,7 @@ export default function ChangeRequestsTable({
                           )}
                         </td>
                         
-                        {/* Creation Date - only show on first row */}
+                        {/* Assigned on - only show on first row */}
                         <td className="px-6 py-4">
                           {index === 0 && (
                             <div className="text-xs text-gray-600">
@@ -365,7 +365,7 @@ export default function ChangeRequestsTable({
                           )}
                         </td>
                         
-                        {/* Completion Date - only show on first row */}
+                        {/* Closed on - only show on first row */}
                         <td className="px-6 py-4">
                           {index === 0 && (() => {
                             const completionDate = getCompletionDate(request);
