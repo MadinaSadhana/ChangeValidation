@@ -146,6 +146,14 @@ Preferred communication style: Simple, everyday language.
 
 ## Current Application State
 
+### Enhanced Dashboard Features (January 19, 2025)
+- **Pre-Checkout and Post-Checkout Status Columns**: Main dashboard displays validation status with:
+  - Application count showing total number of applications per change request
+  - Pre-checkout validation status with completion counts (e.g., "3/5")
+  - Post-checkout validation status with completion counts
+  - Color-coded badges: Gray for Completed, Blue for In Progress, Light Gray for Pending, Gray for N/A
+  - Support for "Not Applicable" status handling
+
 ### Sample Data Created (January 19, 2025)
 - **Applications**: 10 diverse applications created for comprehensive testing
   - Customer Portal, Payment Gateway, Inventory Management, Email Service, Analytics Dashboard (SPOC: User 45228804)  
@@ -169,3 +177,4 @@ Preferred communication style: Simple, everyday language.
 - Primary user (45228804) configured as Change Manager role
 - Full access to create change requests and monitor all validations
 - Sample data enables immediate testing of all system features
+- Dashboard displays enhanced validation status columns for comprehensive change tracking

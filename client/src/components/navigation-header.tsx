@@ -98,17 +98,6 @@ export default function NavigationHeader() {
                   Dashboard
                 </a>
               </Link>
-              {isChangeManager && (
-                <Link href="/all-change-requests">
-                  <a className={`px-1 pb-4 text-sm font-medium transition-colors ${
-                    location === '/all-change-requests' 
-                      ? 'text-primary border-b-2 border-primary' 
-                      : 'text-gray-500 hover:text-gray-700'
-                  }`}>
-                    All Change Requests
-                  </a>
-                </Link>
-              )}
               {!isChangeManager && (
                 <Link href="/my-applications">
                   <a className={`px-1 pb-4 text-sm font-medium transition-colors ${
