@@ -173,6 +173,8 @@ Preferred communication style: Simple, everyday language.
 - **Frontend Status Calculation**: Summary header correctly processes status data to display accurate counts
 - **Real-time Status Updates**: System now displays correct statistics: 8 Completed, 11 In Progress, 3 Pending change requests
 - **Data Integrity**: Complete end-to-end data flow from PostgreSQL → Drizzle ORM → Express API → React Query → UI components
+- **SPOC Integration**: Backend now joins user data to provide realistic SPOC names (Sarah Johnson, David Martinez, etc.)
+- **UI Cleanup**: Removed date/time information from CR Description column for cleaner table display
 
 ### Sample Data Created (January 19, 2025)
 - **Applications**: 15 diverse applications with realistic SPOC assignments

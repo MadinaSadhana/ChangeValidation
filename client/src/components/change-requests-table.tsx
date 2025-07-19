@@ -258,9 +258,6 @@ export default function ChangeRequestsTable({
                           </td>
                           <td className="px-6 py-4">
                             <div className="text-sm text-gray-900">{request.title}</div>
-                            <div className="text-xs text-gray-500 mt-1">
-                              {format(new Date(request.startDateTime), "MMM dd, HH:mm")}
-                            </div>
                           </td>
                           <td className="px-6 py-4">
                             <Badge variant="outline" className="text-xs text-gray-500">
@@ -310,12 +307,7 @@ export default function ChangeRequestsTable({
                         {/* CR Description - only show on first row */}
                         <td className="px-6 py-4">
                           {index === 0 && (
-                            <>
-                              <div className="text-sm text-gray-900">{request.title}</div>
-                              <div className="text-xs text-gray-500 mt-1">
-                                {format(new Date(request.startDateTime), "MMM dd, HH:mm")}
-                              </div>
-                            </>
+                            <div className="text-sm text-gray-900">{request.title}</div>
                           )}
                         </td>
                         
