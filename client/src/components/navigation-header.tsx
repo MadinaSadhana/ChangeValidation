@@ -1,11 +1,13 @@
 import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Bell, ChevronDown } from "lucide-react";
+import { Bell, ChevronDown, AlertTriangle } from "lucide-react";
 import { Link, useLocation } from "wouter";
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { useEffect, useState } from "react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -17,6 +19,37 @@ export default function NavigationHeader() {
   const { user } = useAuth();
   const [location] = useLocation();
   const { toast } = useToast();
+  const [showPriorityAlert, setShowPriorityAlert] = useState(false);
+
+  // Query for priority notifications
+  const { data: changeRequests } = useQuery({
+    queryKey: ["/api/change-requests"],
+    enabled: !!user,
+    refetchInterval: 30000, // Check every 30 seconds
+  });
+
+  // Calculate priority notifications
+  const priorityNotifications = changeRequests?.filter((cr: any) => {
+    const now = new Date();
+    const startTime = new Date(cr.startDateTime);
+    const timeDiff = startTime.getTime() - now.getTime();
+    const hoursUntilStart = timeDiff / (1000 * 60 * 60);
+    
+    // Show alert for P1/Emergency changes starting within 2 hours, or overdue
+    return (cr.changeType === 'P1' || cr.changeType === 'Emergency') && 
+           cr.status === 'active' && 
+           (hoursUntilStart <= 2 || hoursUntilStart < 0);
+  }) || [];
+
+  // Show priority alert when there are critical changes
+  useEffect(() => {
+    if (priorityNotifications.length > 0) {
+      setShowPriorityAlert(true);
+      // Auto-hide after 10 seconds
+      const timer = setTimeout(() => setShowPriorityAlert(false), 10000);
+      return () => clearTimeout(timer);
+    }
+  }, [priorityNotifications.length]);
 
   const logoutMutation = useMutation({
     mutationFn: async () => {
@@ -77,6 +110,19 @@ export default function NavigationHeader() {
 
   const isChangeManager = user?.role === 'change_manager';
 
+  // Show toast notification for priority alerts (only once per session)
+  useEffect(() => {
+    if (priorityNotifications.length > 0 && showPriorityAlert) {
+      toast({
+        title: "High Priority Change Requests!",
+        description: priorityNotifications.length === 1 
+          ? `${priorityNotifications[0].changeId} (${priorityNotifications[0].changeType}) needs immediate attention`
+          : `${priorityNotifications.length} high priority change requests need attention`,
+        variant: "destructive",
+      });
+    }
+  }, [showPriorityAlert]); // Only trigger when alert visibility changes
+
   return (
     <header className="bg-white shadow-md border-b border-gray-200 sticky top-0 z-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -115,13 +161,15 @@ export default function NavigationHeader() {
           
           <div className="flex items-center space-x-4">
             <Button variant="ghost" size="sm" className="relative">
-              <Bell className="h-5 w-5 text-gray-400" />
-              <Badge 
-                variant="destructive" 
-                className="absolute -top-1 -right-1 h-5 w-5 text-xs flex items-center justify-center p-0"
-              >
-                3
-              </Badge>
+              <Bell className={`h-5 w-5 ${priorityNotifications.length > 0 ? 'text-red-500' : 'text-gray-400'}`} />
+              {priorityNotifications.length > 0 && (
+                <Badge 
+                  variant="destructive" 
+                  className="absolute -top-1 -right-1 h-5 w-5 text-xs flex items-center justify-center p-0"
+                >
+                  {priorityNotifications.length}
+                </Badge>
+              )}
             </Button>
             
             <DropdownMenu>
