@@ -74,8 +74,25 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Application routes
-  app.get('/api/applications', isAuthenticated, async (req, res) => {
+  app.get('/api/applications', async (req: any, res) => {
     try {
+      // Check for simple login session first
+      if ((req.session as any)?.user) {
+        const sessionUser = (req.session as any).user;
+        const user = await storage.getUser(sessionUser.id);
+        if (!user) {
+          return res.status(401).json({ message: "Unauthorized" });
+        }
+      } else if (req.isAuthenticated() && req.user?.claims?.sub) {
+        const userId = req.user.claims.sub;
+        const user = await storage.getUser(userId);
+        if (!user) {
+          return res.status(401).json({ message: "Unauthorized" });
+        }
+      } else {
+        return res.status(401).json({ message: "Unauthorized" });
+      }
+
       const applications = await storage.getApplications();
       res.json(applications);
     } catch (error) {
@@ -104,15 +121,33 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Change request routes
-  app.get('/api/change-requests', isAuthenticated, async (req: any, res) => {
+  app.get('/api/change-requests', async (req: any, res) => {
     try {
-      const user = await storage.getUser(req.user.claims.sub);
+      let userId;
+      let user;
+
+      // Check for simple login session first
+      if ((req.session as any)?.user) {
+        const sessionUser = (req.session as any).user;
+        user = await storage.getUser(sessionUser.id);
+        userId = sessionUser.id;
+      } else if (req.isAuthenticated() && req.user?.claims?.sub) {
+        userId = req.user.claims.sub;
+        user = await storage.getUser(userId);
+      } else {
+        return res.status(401).json({ message: "Unauthorized" });
+      }
+
+      if (!user) {
+        return res.status(401).json({ message: "User not found" });
+      }
+
       const filters: any = {};
 
       // Change managers can see all requests
       // Application owners see only requests with their applications
       if (user?.role === 'application_owner') {
-        filters.spocId = req.user.claims.sub;
+        filters.spocId = userId;
       }
 
       // Apply query filters
