@@ -102,17 +102,20 @@ export default function SummaryHeader({ changeRequests, isLoading }: SummaryHead
       </Card>
 
       {/* In Progress Status */}
-      <Card>
+      <Card className="border-l-4 border-l-orange-500">
         <CardContent className="p-6">
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm font-medium text-gray-600">In Progress</p>
-              <p className="text-2xl font-bold text-blue-600">{statusCounts.in_progress}</p>
-              <Badge variant="outline" className="mt-1 border-blue-200 text-blue-700">
-                Active Work
+              <p className="text-2xl font-bold text-orange-600">{statusCounts.in_progress}</p>
+              <Badge variant="destructive" className="mt-1 bg-orange-100 text-orange-800 border-orange-300">
+                🔄 Active Work
               </Badge>
             </div>
-            <AlertTriangle className="h-8 w-8 text-blue-600" />
+            <div className="relative">
+              <AlertTriangle className="h-8 w-8 text-orange-500" />
+              <div className="absolute -top-1 -right-1 h-3 w-3 bg-orange-500 rounded-full animate-pulse"></div>
+            </div>
           </div>
         </CardContent>
       </Card>

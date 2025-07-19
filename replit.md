@@ -157,7 +157,7 @@ Preferred communication style: Simple, everyday language.
   - Color-coded badges: Gray for Completed, Blue for In Progress, Light Gray for Pending, Gray for N/A
   - Support for "Not Applicable" status handling with individual application-level tracking
 - **Overall Status Summary Header**: Enhanced summary cards showing total change requests and overall completion status:
-  - **In Progress Status**: Change requests with validations currently being worked on (blue indicators)
+  - **In Progress Status**: Change requests with validations currently being worked on (orange indicators with animated pulse)
   - **Pending Status**: Change requests with validations awaiting action (yellow indicators)  
   - **Completed Status**: Change requests with all validations completed (green indicators)
   - Total count display with color-coded status indicators and descriptive badges

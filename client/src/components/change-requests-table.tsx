@@ -121,7 +121,7 @@ export default function ChangeRequestsTable({
       return { status: 'Completed', badge: 'secondary', color: 'text-green-600' };
     }
     if (hasInProgress) {
-      return { status: 'In Progress', badge: 'default', color: 'text-blue-600' };
+      return { status: 'In Progress', badge: 'destructive', color: 'text-orange-600' };
     }
     if (hasPending) {
       return { status: 'Pending', badge: 'outline', color: 'text-yellow-600' };
@@ -323,9 +323,21 @@ export default function ChangeRequestsTable({
                           {index === 0 && (() => {
                             const overallStatus = calculateOverallStatus(request);
                             return (
-                              <Badge variant={overallStatus.badge as any} className={`text-xs ${overallStatus.color}`}>
-                                {overallStatus.status}
-                              </Badge>
+                              <div className="flex items-center space-x-2">
+                                <Badge 
+                                  variant={overallStatus.badge as any} 
+                                  className={`text-xs font-medium ${
+                                    overallStatus.status === 'In Progress' 
+                                      ? 'bg-orange-100 text-orange-800 border-orange-300 shadow-sm' 
+                                      : overallStatus.color
+                                  }`}
+                                >
+                                  {overallStatus.status === 'In Progress' && (
+                                    <span className="inline-block w-2 h-2 bg-orange-500 rounded-full mr-1 animate-pulse"></span>
+                                  )}
+                                  {overallStatus.status}
+                                </Badge>
+                              </div>
                             );
                           })()}
                         </td>
