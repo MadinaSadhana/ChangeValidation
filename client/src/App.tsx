@@ -9,6 +9,7 @@ import SimpleLogin from "@/pages/simple-login";
 import Dashboard from "@/pages/dashboard";
 import ChangeRequestDetails from "@/pages/change-request-details";
 import ApplicationOwner from "@/pages/application-owner";
+import AllChangeRequestsPage from "@/pages/all-change-requests";
 
 function Router() {
   const { isAuthenticated, isLoading } = useAuth();
@@ -28,6 +29,7 @@ function Router() {
       ) : (
         <>
           <Route path="/" component={Dashboard} />
+          <Route path="/all-change-requests" component={AllChangeRequestsPage} />
           <Route path="/change-requests/:id" component={ChangeRequestDetails} />
           <Route path="/my-applications" component={ApplicationOwner} />
         </>

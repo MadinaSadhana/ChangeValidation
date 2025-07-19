@@ -159,6 +159,27 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  app.get('/api/change-requests/all', isAuthenticated, async (req: any, res) => {
+    try {
+      const user = await storage.getUser(req.user.claims.sub);
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
+      }
+
+      // Only allow change managers and admins to view all change requests
+      if (user.role !== 'change_manager' && user.role !== 'admin') {
+        return res.status(403).json({ message: "Access denied" });
+      }
+
+      // Get all change requests without filtering
+      const changeRequests = await storage.getChangeRequests({});
+      res.json(changeRequests);
+    } catch (error) {
+      console.error("Error fetching all change requests:", error);
+      res.status(500).json({ message: "Failed to fetch all change requests" });
+    }
+  });
+
   app.post('/api/change-requests', isAuthenticated, async (req: any, res) => {
     try {
       const user = await storage.getUser(req.user.claims.sub);
@@ -253,6 +274,46 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json(stats);
     } catch (error) {
       console.error("Error fetching application owner stats:", error);
+      res.status(500).json({ message: "Failed to fetch stats" });
+    }
+  });
+
+  app.get('/api/stats/all', isAuthenticated, async (req: any, res) => {
+    try {
+      const user = await storage.getUser(req.user.claims.sub);
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
+      }
+
+      if (user.role !== 'change_manager' && user.role !== 'admin') {
+        return res.status(403).json({ message: "Access denied" });
+      }
+
+      const allRequests = await storage.getChangeRequests({});
+      const totalRequests = allRequests.length;
+      const activeRequests = allRequests.filter(req => req.status === 'active' || req.status === 'scheduled').length;
+      const completedRequests = allRequests.filter(req => req.status === 'completed').length;
+      
+      // Calculate pending validations across all applications
+      let pendingValidations = 0;
+      for (const request of allRequests) {
+        if (request.applications) {
+          pendingValidations += request.applications.filter(app => 
+            app.preChangeStatus === 'pending' || app.postChangeStatus === 'pending'
+          ).length;
+        }
+      }
+
+      const stats = {
+        totalRequests,
+        activeRequests,
+        completedRequests,
+        pendingValidations
+      };
+
+      res.json(stats);
+    } catch (error) {
+      console.error("Error fetching all stats:", error);
       res.status(500).json({ message: "Failed to fetch stats" });
     }
   });

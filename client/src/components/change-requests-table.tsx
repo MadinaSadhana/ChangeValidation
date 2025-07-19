@@ -58,10 +58,14 @@ export default function ChangeRequestsTable({
     const totalApps = applications.length;
     const preCompleted = applications.filter(app => app.preChangeStatus === 'completed').length;
     const postCompleted = applications.filter(app => app.postChangeStatus === 'completed').length;
+    const preNA = applications.filter(app => app.preChangeStatus === 'not_applicable').length;
+    const postNA = applications.filter(app => app.postChangeStatus === 'not_applicable').length;
 
-    const getOverallStatus = (completed: number, total: number) => {
+    const getOverallStatus = (completed: number, total: number, notApplicable: number) => {
+      const applicable = total - notApplicable;
+      if (applicable === 0) return 'N/A';
       if (completed === 0) return 'Pending';
-      if (completed === total) return 'Completed';
+      if (completed === applicable) return 'Completed';
       return 'In Progress';
     };
 
@@ -69,8 +73,8 @@ export default function ChangeRequestsTable({
       totalApps,
       preCompleted,
       postCompleted,
-      preChange: getOverallStatus(preCompleted, totalApps),
-      postChange: getOverallStatus(postCompleted, totalApps)
+      preChange: getOverallStatus(preCompleted, totalApps, preNA),
+      postChange: getOverallStatus(postCompleted, totalApps, postNA)
     };
   };
 
@@ -79,6 +83,7 @@ export default function ChangeRequestsTable({
       case 'Completed': return 'secondary';
       case 'In Progress': return 'default';
       case 'Pending': return 'outline';
+      case 'N/A': return 'secondary';
       default: return 'outline';
     }
   };
