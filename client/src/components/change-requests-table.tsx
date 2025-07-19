@@ -20,14 +20,15 @@ export default function ChangeRequestsTable({
   isChangeManager 
 }: ChangeRequestsTableProps) {
   const [searchQuery, setSearchQuery] = useState("");
-  const [filterType, setFilterType] = useState("");
+  const [filterType, setFilterType] = useState("all");
 
   const filteredRequests = changeRequests.filter((request) => {
-    const matchesSearch = !searchQuery || 
+    const matchesSearch = !searchQuery.trim() || 
       request.changeId.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      request.title.toLowerCase().includes(searchQuery.toLowerCase());
+      request.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      (request.description && request.description.toLowerCase().includes(searchQuery.toLowerCase()));
     
-    const matchesType = !filterType || filterType === 'all' || request.changeType === filterType;
+    const matchesType = filterType === 'all' || request.changeType === filterType;
 
     return matchesSearch && matchesType;
   });
@@ -170,12 +171,12 @@ export default function ChangeRequestsTable({
               
               <Select value={filterType} onValueChange={setFilterType}>
                 <SelectTrigger className="w-full sm:w-40">
-                  <SelectValue placeholder="Change Type" />
+                  <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">All Types</SelectItem>
-                  <SelectItem value="P1">P1</SelectItem>
-                  <SelectItem value="P2">P2</SelectItem>
+                  <SelectItem value="P1">P1 Priority</SelectItem>
+                  <SelectItem value="P2">P2 Priority</SelectItem>
                   <SelectItem value="Emergency">Emergency</SelectItem>
                   <SelectItem value="Standard">Standard</SelectItem>
                 </SelectContent>
