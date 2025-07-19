@@ -244,10 +244,10 @@ export default function ChangeRequestsTable({
                     CR ID
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Priority
+                    CR Description
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    CR Description
+                    Priority
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Overall Status
@@ -283,12 +283,12 @@ export default function ChangeRequestsTable({
                             <div className="text-sm font-medium text-gray-900">{request.changeId}</div>
                           </td>
                           <td className="px-6 py-4">
+                            <div className="text-sm text-gray-900">{request.title}</div>
+                          </td>
+                          <td className="px-6 py-4">
                             <Badge variant={getChangeTypeBadge(request.changeType)} className="text-xs">
                               {request.changeType}
                             </Badge>
-                          </td>
-                          <td className="px-6 py-4">
-                            <div className="text-sm text-gray-900">{request.title}</div>
                           </td>
                           <td className="px-6 py-4">
                             <Badge variant="outline" className="text-xs text-gray-500">
@@ -326,19 +326,19 @@ export default function ChangeRequestsTable({
                           )}
                         </td>
                         
+                        {/* CR Description - only show on first row */}
+                        <td className="px-6 py-4">
+                          {index === 0 && (
+                            <div className="text-sm text-gray-900">{request.title}</div>
+                          )}
+                        </td>
+                        
                         {/* Priority - only show on first row */}
                         <td className="px-6 py-4">
                           {index === 0 && (
                             <Badge variant={getChangeTypeBadge(request.changeType)} className="text-xs">
                               {request.changeType}
                             </Badge>
-                          )}
-                        </td>
-                        
-                        {/* CR Description - only show on first row */}
-                        <td className="px-6 py-4">
-                          {index === 0 && (
-                            <div className="text-sm text-gray-900">{request.title}</div>
                           )}
                         </td>
                         
