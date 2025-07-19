@@ -109,9 +109,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const user = await storage.getUser(req.user.claims.sub);
       const filters: any = {};
 
-      // Apply role-based filtering
-      if (user?.role === 'change_manager') {
-        filters.managerId = req.user.claims.sub;
+      // Change managers can see all requests
+      // Application owners see only requests with their applications
+      if (user?.role === 'application_owner') {
+        filters.spocId = req.user.claims.sub;
       }
 
       // Apply query filters
@@ -136,10 +137,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(404).json({ message: "Change request not found" });
       }
 
-      // Check permissions
+      // Check permissions - change managers can see all requests
       const user = await storage.getUser(req.user.claims.sub);
-      if (user?.role === 'change_manager' && changeRequest.changeManagerId !== req.user.claims.sub) {
-        return res.status(403).json({ message: "Access denied" });
+      if (user?.role === 'application_owner') {
+        // Application owners can only see requests that involve their applications
+        const userApplications = await storage.getApplicationsBySpoc(req.user.claims.sub);
+        const requestApplications = await storage.getChangeRequestApplications(id);
+        const hasAccess = requestApplications.some(ra => 
+          userApplications.some(ua => ua.id === ra.applicationId)
+        );
+        if (!hasAccess) {
+          return res.status(403).json({ message: "Access denied" });
+        }
       }
 
       const applications = await storage.getChangeRequestApplications(id);

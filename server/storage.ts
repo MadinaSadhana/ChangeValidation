@@ -32,6 +32,7 @@ export interface IStorage {
     type?: string;
     status?: string;
     managerId?: string;
+    spocId?: string;
   }): Promise<(ChangeRequest & { applicationCount: number })[]>;
   getChangeRequestById(id: number): Promise<ChangeRequest | undefined>;
   getChangeRequestByChangeId(changeId: string): Promise<ChangeRequest | undefined>;
@@ -108,6 +109,7 @@ export class DatabaseStorage implements IStorage {
     type?: string;
     status?: string;
     managerId?: string;
+    spocId?: string;
   }): Promise<(ChangeRequest & { applicationCount: number })[]> {
     let query = db
       .select({
@@ -149,6 +151,12 @@ export class DatabaseStorage implements IStorage {
     
     if (filters?.managerId) {
       conditions.push(eq(changeRequests.changeManagerId, filters.managerId));
+    }
+    
+    // Filter by SPOC - show only change requests that have applications assigned to this SPOC
+    if (filters?.spocId) {
+      query = query.innerJoin(applications, eq(changeRequestApplications.applicationId, applications.id));
+      conditions.push(eq(applications.spocId, filters.spocId));
     }
 
     if (conditions.length > 0) {
