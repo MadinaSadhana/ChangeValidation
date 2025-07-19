@@ -163,8 +163,27 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.get('/api/change-requests/:id', isAuthenticated, async (req: any, res) => {
+  app.get('/api/change-requests/:id', async (req: any, res) => {
     try {
+      let userId;
+      let user;
+
+      // Check for simple login session first
+      if ((req.session as any)?.user) {
+        const sessionUser = (req.session as any).user;
+        user = await storage.getUser(sessionUser.id);
+        userId = sessionUser.id;
+      } else if (req.isAuthenticated() && req.user?.claims?.sub) {
+        userId = req.user.claims.sub;
+        user = await storage.getUser(userId);
+      } else {
+        return res.status(401).json({ message: "Unauthorized" });
+      }
+
+      if (!user) {
+        return res.status(401).json({ message: "User not found" });
+      }
+
       const id = parseInt(req.params.id);
       const changeRequest = await storage.getChangeRequestById(id);
       
@@ -173,10 +192,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       // Check permissions - change managers can see all requests
-      const user = await storage.getUser(req.user.claims.sub);
       if (user?.role === 'application_owner') {
         // Application owners can only see requests that involve their applications
-        const userApplications = await storage.getApplicationsBySpoc(req.user.claims.sub);
+        const userApplications = await storage.getApplicationsBySpoc(userId);
         const requestApplications = await storage.getChangeRequestApplications(id);
         const hasAccess = requestApplications.some(ra => 
           userApplications.some(ua => ua.id === ra.applicationId)
@@ -196,9 +214,27 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
 
 
-  app.post('/api/change-requests', isAuthenticated, async (req: any, res) => {
+  app.post('/api/change-requests', async (req: any, res) => {
     try {
-      const user = await storage.getUser(req.user.claims.sub);
+      let userId;
+      let user;
+
+      // Check for simple login session first
+      if ((req.session as any)?.user) {
+        const sessionUser = (req.session as any).user;
+        user = await storage.getUser(sessionUser.id);
+        userId = sessionUser.id;
+      } else if (req.isAuthenticated() && req.user?.claims?.sub) {
+        userId = req.user.claims.sub;
+        user = await storage.getUser(userId);
+      } else {
+        return res.status(401).json({ message: "Unauthorized" });
+      }
+
+      if (!user) {
+        return res.status(401).json({ message: "User not found" });
+      }
+
       if (user?.role !== 'change_manager') {
         return res.status(403).json({ message: "Only change managers can create change requests" });
       }
@@ -213,7 +249,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const validatedData = insertChangeRequestSchema.parse({
         ...changeRequestData,
         changeId,
-        changeManagerId: req.user.claims.sub,
+        changeManagerId: userId,
       });
 
       const changeRequest = await storage.createChangeRequest(validatedData);
@@ -233,10 +269,29 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Application owner routes
-  app.get('/api/my-applications', isAuthenticated, async (req: any, res) => {
+  app.get('/api/my-applications', async (req: any, res) => {
     try {
-      const spocId = req.user.claims.sub;
-      const assignments = await storage.getChangeRequestApplicationsBySpoc(spocId);
+      let userId;
+
+      // Check for simple login session first
+      if ((req.session as any)?.user) {
+        const sessionUser = (req.session as any).user;
+        const user = await storage.getUser(sessionUser.id);
+        if (!user) {
+          return res.status(401).json({ message: "Unauthorized" });
+        }
+        userId = sessionUser.id;
+      } else if (req.isAuthenticated() && req.user?.claims?.sub) {
+        userId = req.user.claims.sub;
+        const user = await storage.getUser(userId);
+        if (!user) {
+          return res.status(401).json({ message: "Unauthorized" });
+        }
+      } else {
+        return res.status(401).json({ message: "Unauthorized" });
+      }
+
+      const assignments = await storage.getChangeRequestApplicationsBySpoc(userId);
       res.json(assignments);
     } catch (error) {
       console.error("Error fetching application assignments:", error);
@@ -245,15 +300,34 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   app.patch('/api/change-requests/:changeRequestId/applications/:applicationId/validation', 
-    isAuthenticated, async (req: any, res) => {
+    async (req: any, res) => {
     try {
+      let userId;
+
+      // Check for simple login session first
+      if ((req.session as any)?.user) {
+        const sessionUser = (req.session as any).user;
+        const user = await storage.getUser(sessionUser.id);
+        if (!user) {
+          return res.status(401).json({ message: "Unauthorized" });
+        }
+        userId = sessionUser.id;
+      } else if (req.isAuthenticated() && req.user?.claims?.sub) {
+        userId = req.user.claims.sub;
+        const user = await storage.getUser(userId);
+        if (!user) {
+          return res.status(401).json({ message: "Unauthorized" });
+        }
+      } else {
+        return res.status(401).json({ message: "Unauthorized" });
+      }
+
       const changeRequestId = parseInt(req.params.changeRequestId);
       const applicationId = parseInt(req.params.applicationId);
-      const spocId = req.user.claims.sub;
 
       const validatedData = updateValidationSchema.parse(req.body);
       
-      await storage.updateValidationStatus(changeRequestId, applicationId, spocId, validatedData);
+      await storage.updateValidationStatus(changeRequestId, applicationId, userId, validatedData);
       
       res.json({ message: "Validation status updated successfully" });
     } catch (error) {
@@ -269,14 +343,32 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Stats routes
-  app.get('/api/stats/change-manager', isAuthenticated, async (req: any, res) => {
+  app.get('/api/stats/change-manager', async (req: any, res) => {
     try {
-      const user = await storage.getUser(req.user.claims.sub);
+      let userId;
+      let user;
+
+      // Check for simple login session first
+      if ((req.session as any)?.user) {
+        const sessionUser = (req.session as any).user;
+        user = await storage.getUser(sessionUser.id);
+        userId = sessionUser.id;
+      } else if (req.isAuthenticated() && req.user?.claims?.sub) {
+        userId = req.user.claims.sub;
+        user = await storage.getUser(userId);
+      } else {
+        return res.status(401).json({ message: "Unauthorized" });
+      }
+
+      if (!user) {
+        return res.status(401).json({ message: "User not found" });
+      }
+
       if (user?.role !== 'change_manager') {
         return res.status(403).json({ message: "Access denied" });
       }
 
-      const stats = await storage.getChangeManagerStats(req.user.claims.sub);
+      const stats = await storage.getChangeManagerStats(userId);
       res.json(stats);
     } catch (error) {
       console.error("Error fetching change manager stats:", error);
@@ -284,9 +376,29 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.get('/api/stats/application-owner', isAuthenticated, async (req: any, res) => {
+  app.get('/api/stats/application-owner', async (req: any, res) => {
     try {
-      const stats = await storage.getApplicationOwnerStats(req.user.claims.sub);
+      let userId;
+
+      // Check for simple login session first
+      if ((req.session as any)?.user) {
+        const sessionUser = (req.session as any).user;
+        const user = await storage.getUser(sessionUser.id);
+        if (!user) {
+          return res.status(401).json({ message: "Unauthorized" });
+        }
+        userId = sessionUser.id;
+      } else if (req.isAuthenticated() && req.user?.claims?.sub) {
+        userId = req.user.claims.sub;
+        const user = await storage.getUser(userId);
+        if (!user) {
+          return res.status(401).json({ message: "Unauthorized" });
+        }
+      } else {
+        return res.status(401).json({ message: "Unauthorized" });
+      }
+
+      const stats = await storage.getApplicationOwnerStats(userId);
       res.json(stats);
     } catch (error) {
       console.error("Error fetching application owner stats:", error);

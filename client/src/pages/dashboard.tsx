@@ -4,7 +4,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
 import { isUnauthorizedError } from "@/lib/authUtils";
 import NavigationHeader from "@/components/navigation-header";
-import StatsCards from "@/components/stats-cards";
+
 import ChangeRequestsTable from "@/components/change-requests-table";
 import CreateChangeRequestModal from "@/components/create-change-request-modal";
 import { useState } from "react";
@@ -31,11 +31,7 @@ export default function Dashboard() {
     }
   }, [isAuthenticated, isLoading, toast]);
 
-  const { data: stats, isLoading: statsLoading } = useQuery({
-    queryKey: ["/api/stats/change-manager"],
-    enabled: !!user && user.role === "change_manager",
-    retry: false,
-  });
+
 
   const { data: changeRequests, isLoading: requestsLoading, refetch: refetchRequests } = useQuery({
     queryKey: ["/api/change-requests"],
@@ -84,13 +80,6 @@ export default function Dashboard() {
             )}
           </div>
         </div>
-
-        {/* Stats Cards */}
-        <StatsCards 
-          stats={stats} 
-          isLoading={statsLoading} 
-          isChangeManager={isChangeManager}
-        />
 
         {/* Change Requests Table */}
         <ChangeRequestsTable 
