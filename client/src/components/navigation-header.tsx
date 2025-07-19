@@ -20,7 +20,7 @@ export default function NavigationHeader() {
 
   const logoutMutation = useMutation({
     mutationFn: async () => {
-      return apiRequest("/api/simple-logout", "POST");
+      return apiRequest("POST", "/api/simple-logout");
     },
     onSuccess: () => {
       toast({

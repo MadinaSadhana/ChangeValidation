@@ -16,7 +16,7 @@ export default function SimpleLogin() {
 
   const loginMutation = useMutation({
     mutationFn: async (name: string) => {
-      return apiRequest("/api/simple-login", "POST", { name });
+      return apiRequest("POST", "/api/simple-login", { name });
     },
     onSuccess: () => {
       toast({
