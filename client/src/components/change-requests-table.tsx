@@ -172,7 +172,7 @@ export default function ChangeRequestsTable({
       <Card>
         <CardHeader>
           <CardTitle>
-            {isChangeManager ? "Recent Change Requests" : "Assigned Change Requests"}
+            Change Requests
           </CardTitle>
         </CardHeader>
         <CardContent>
@@ -184,10 +184,13 @@ export default function ChangeRequestsTable({
                     CR ID
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Priority
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     CR Description
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Application Names
+                    Application Name
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Pre-Application Checkout Status
@@ -206,108 +209,165 @@ export default function ChangeRequestsTable({
               <tbody className="bg-white divide-y divide-gray-200">
                 {filteredRequests.length === 0 ? (
                   <tr>
-                    <td colSpan={7} className="px-6 py-8 text-center text-gray-500">
+                    <td colSpan={8} className="px-6 py-8 text-center text-gray-500">
                       No change requests found matching your criteria.
                     </td>
                   </tr>
                 ) : (
-                  filteredRequests.map((request) => {
-                    // Calculate validation status summary
-                    const validationSummary = getValidationSummary(request.applications || []);
-                    
-                    return (
-                      <tr key={request.id} className="hover:bg-gray-50">
-                        {/* CR ID */}
-                        <td className="px-6 py-4">
-                          <div className="text-sm font-medium text-gray-900">{request.changeId}</div>
-                        </td>
-                        
-                        {/* CR Description */}
-                        <td className="px-6 py-4">
-                          <div className="text-sm text-gray-900">{request.title}</div>
-                          <div className="flex items-center space-x-2 mt-1">
+                  filteredRequests.flatMap((request) => {
+                    // If no applications, show single row
+                    if (!request.applications || request.applications.length === 0) {
+                      return (
+                        <tr key={`${request.id}-no-apps`} className="hover:bg-gray-50">
+                          <td className="px-6 py-4">
+                            <div className="text-sm font-medium text-gray-900">{request.changeId}</div>
+                          </td>
+                          <td className="px-6 py-4">
                             <Badge variant={getChangeTypeBadge(request.changeType)} className="text-xs">
                               {request.changeType}
                             </Badge>
-                            <span className="text-xs text-gray-500">
+                          </td>
+                          <td className="px-6 py-4">
+                            <div className="text-sm text-gray-900">{request.title}</div>
+                            <div className="text-xs text-gray-500 mt-1">
                               {format(new Date(request.startDateTime), "MMM dd, HH:mm")}
-                            </span>
-                          </div>
+                            </div>
+                          </td>
+                          <td className="px-6 py-4">
+                            <span className="text-sm text-gray-500">No applications</span>
+                          </td>
+                          <td className="px-6 py-4">
+                            <span className="text-xs text-gray-500">N/A</span>
+                          </td>
+                          <td className="px-6 py-4">
+                            <span className="text-xs text-gray-500">N/A</span>
+                          </td>
+                          <td className="px-6 py-4">
+                            <Badge 
+                              variant={request.status === 'completed' ? 'secondary' : request.status === 'active' ? 'default' : 'outline'}
+                              className="capitalize"
+                            >
+                              {request.status}
+                            </Badge>
+                          </td>
+                          <td className="px-6 py-4">
+                            <Link href={`/change-requests/${request.id}`}>
+                              <Button variant="ghost" size="sm">
+                                <ExternalLink className="h-4 w-4 mr-2" />
+                                View Details
+                              </Button>
+                            </Link>
+                          </td>
+                        </tr>
+                      );
+                    }
+
+                    // Split into rows for each application
+                    return request.applications.map((app, index) => (
+                      <tr key={`${request.id}-${app.applicationId}`} className="hover:bg-gray-50">
+                        {/* CR ID - only show on first row */}
+                        <td className="px-6 py-4">
+                          {index === 0 && (
+                            <div className="text-sm font-medium text-gray-900">{request.changeId}</div>
+                          )}
                         </td>
                         
-                        {/* Application Names */}
+                        {/* Priority - only show on first row */}
+                        <td className="px-6 py-4">
+                          {index === 0 && (
+                            <Badge variant={getChangeTypeBadge(request.changeType)} className="text-xs">
+                              {request.changeType}
+                            </Badge>
+                          )}
+                        </td>
+                        
+                        {/* CR Description - only show on first row */}
+                        <td className="px-6 py-4">
+                          {index === 0 && (
+                            <>
+                              <div className="text-sm text-gray-900">{request.title}</div>
+                              <div className="text-xs text-gray-500 mt-1">
+                                {format(new Date(request.startDateTime), "MMM dd, HH:mm")}
+                              </div>
+                            </>
+                          )}
+                        </td>
+                        
+                        {/* Application Name - show for each row */}
                         <td className="px-6 py-4">
                           <div className="text-sm text-gray-900">
-                            {request.applications && request.applications.length > 0 ? (
-                              <div className="space-y-1">
-                                {request.applications.slice(0, 3).map((app, index) => (
-                                  <div key={index} className="text-xs">
-                                    {app.application?.name || 'Unknown Application'}
-                                  </div>
-                                ))}
-                                {request.applications.length > 3 && (
-                                  <div className="text-xs text-gray-500">
-                                    +{request.applications.length - 3} more
-                                  </div>
-                                )}
-                              </div>
-                            ) : (
-                              <span className="text-sm text-gray-500">No applications</span>
-                            )}
+                            {app.application?.name || 'Unknown Application'}
                           </div>
+                          {app.application?.spoc && (
+                            <div className="text-xs text-gray-500">
+                              SPOC: {app.application.spoc.firstName}
+                            </div>
+                          )}
                         </td>
                         
-                        {/* Pre-Application Checkout Status */}
-                        <td className="px-6 py-4">
-                          <div className="flex flex-col space-y-1">
-                            <Badge 
-                              variant={getValidationBadgeVariant(validationSummary.preChange)} 
-                              className="text-xs w-fit"
-                            >
-                              {validationSummary.preChange}
-                            </Badge>
-                            <span className="text-xs text-gray-500">
-                              {validationSummary.preCompleted}/{validationSummary.totalApps}
-                            </span>
-                          </div>
-                        </td>
-                        
-                        {/* Post-Application Checkout Status */}
-                        <td className="px-6 py-4">
-                          <div className="flex flex-col space-y-1">
-                            <Badge 
-                              variant={getValidationBadgeVariant(validationSummary.postChange)} 
-                              className="text-xs w-fit"
-                            >
-                              {validationSummary.postChange}
-                            </Badge>
-                            <span className="text-xs text-gray-500">
-                              {validationSummary.postCompleted}/{validationSummary.totalApps}
-                            </span>
-                          </div>
-                        </td>
-                        
-                        {/* Overall Status */}
+                        {/* Pre-Application Checkout Status - individual per app */}
                         <td className="px-6 py-4">
                           <Badge 
-                            variant={request.status === 'completed' ? 'secondary' : request.status === 'active' ? 'default' : 'outline'}
-                            className="capitalize"
+                            variant={getValidationBadgeVariant(
+                              app.preChangeStatus === 'completed' ? 'Completed' :
+                              app.preChangeStatus === 'not_applicable' ? 'N/A' : 'Pending'
+                            )} 
+                            className="text-xs w-fit"
                           >
-                            {request.status}
+                            {app.preChangeStatus === 'completed' ? 'Completed' :
+                             app.preChangeStatus === 'not_applicable' ? 'N/A' : 'Pending'}
                           </Badge>
+                          {app.preChangeComments && (
+                            <div className="text-xs text-gray-500 mt-1 truncate max-w-32">
+                              {app.preChangeComments}
+                            </div>
+                          )}
                         </td>
                         
-                        {/* Actions */}
+                        {/* Post-Application Checkout Status - individual per app */}
                         <td className="px-6 py-4">
-                          <Link href={`/change-requests/${request.id}`}>
-                            <Button variant="ghost" size="sm">
-                              <ExternalLink className="h-4 w-4 mr-2" />
-                              View Details
-                            </Button>
-                          </Link>
+                          <Badge 
+                            variant={getValidationBadgeVariant(
+                              app.postChangeStatus === 'completed' ? 'Completed' :
+                              app.postChangeStatus === 'not_applicable' ? 'N/A' : 'Pending'
+                            )} 
+                            className="text-xs w-fit"
+                          >
+                            {app.postChangeStatus === 'completed' ? 'Completed' :
+                             app.postChangeStatus === 'not_applicable' ? 'N/A' : 'Pending'}
+                          </Badge>
+                          {app.postChangeComments && (
+                            <div className="text-xs text-gray-500 mt-1 truncate max-w-32">
+                              {app.postChangeComments}
+                            </div>
+                          )}
+                        </td>
+                        
+                        {/* Overall Status - only show on first row */}
+                        <td className="px-6 py-4">
+                          {index === 0 && (
+                            <Badge 
+                              variant={request.status === 'completed' ? 'secondary' : request.status === 'active' ? 'default' : 'outline'}
+                              className="capitalize"
+                            >
+                              {request.status}
+                            </Badge>
+                          )}
+                        </td>
+                        
+                        {/* Actions - only show on first row */}
+                        <td className="px-6 py-4">
+                          {index === 0 && (
+                            <Link href={`/change-requests/${request.id}`}>
+                              <Button variant="ghost" size="sm">
+                                <ExternalLink className="h-4 w-4 mr-2" />
+                                View Details
+                              </Button>
+                            </Link>
+                          )}
                         </td>
                       </tr>
-                    );
+                    ));
                   })
                 )}
               </tbody>

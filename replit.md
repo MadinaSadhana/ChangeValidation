@@ -147,15 +147,16 @@ Preferred communication style: Simple, everyday language.
 ## Current Application State
 
 ### Enhanced Dashboard Features (January 19, 2025)
-- **Redesigned Table Headers**: Main dashboard now displays with structured columns:
-  - **CR ID**: Change request identifier
-  - **CR Description**: Title with change type badge and schedule information
-  - **Application Names**: List of assigned applications (up to 3 shown, with "+X more" indicator)
-  - **Pre-Application Checkout Status**: Status badge and completion count (e.g., "3/5")
-  - **Post-Application Checkout Status**: Status badge and completion count
-  - **Overall Status**: Change request status (Active, Completed, Scheduled, etc.)
+- **Application-Split Table Structure**: Main dashboard now displays one row per application per change request:
+  - **CR ID**: Change request identifier (shown only on first application row)
+  - **Priority**: Change type badge showing priority level (P1, P2, Emergency, Standard)
+  - **CR Description**: Title with schedule information (shown only on first application row)
+  - **Application Name**: Individual application name with SPOC information
+  - **Pre-Application Checkout Status**: Individual application pre-change validation status with comments
+  - **Post-Application Checkout Status**: Individual application post-change validation status with comments
+  - **Overall Status**: Change request status (shown only on first application row)
   - Color-coded badges: Gray for Completed, Blue for In Progress, Light Gray for Pending, Gray for N/A
-  - Support for "Not Applicable" status handling
+  - Support for "Not Applicable" status handling with individual application-level tracking
 
 ### Sample Data Created (January 19, 2025)
 - **Applications**: 10 diverse applications created for comprehensive testing
