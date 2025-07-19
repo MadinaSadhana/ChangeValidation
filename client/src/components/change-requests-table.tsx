@@ -111,9 +111,8 @@ export default function ChangeRequestsTable({
         allCompleted = false;
       }
 
-      // Check if not completed (excluding not_applicable which counts as complete)
-      if ((preStatus !== 'completed' && preStatus !== 'not_applicable') || 
-          (postStatus !== 'completed' && postStatus !== 'not_applicable')) {
+      // Check if not completed
+      if (preStatus !== 'completed' || postStatus !== 'completed') {
         allCompleted = false;
       }
     }
@@ -343,12 +342,12 @@ export default function ChangeRequestsTable({
                           <Badge 
                             variant={getValidationBadgeVariant(
                               app.preChangeStatus === 'completed' ? 'Completed' :
-                              app.preChangeStatus === 'not_applicable' ? 'N/A' : 'Pending'
+                              app.preChangeStatus === 'in_progress' ? 'In Progress' : 'Pending'
                             )} 
                             className="text-xs w-fit"
                           >
                             {app.preChangeStatus === 'completed' ? 'Completed' :
-                             app.preChangeStatus === 'not_applicable' ? 'N/A' : 'Pending'}
+                             app.preChangeStatus === 'in_progress' ? 'In Progress' : 'Pending'}
                           </Badge>
                         </td>
                         
@@ -357,12 +356,12 @@ export default function ChangeRequestsTable({
                           <Badge 
                             variant={getValidationBadgeVariant(
                               app.postChangeStatus === 'completed' ? 'Completed' :
-                              app.postChangeStatus === 'not_applicable' ? 'N/A' : 'Pending'
+                              app.postChangeStatus === 'in_progress' ? 'In Progress' : 'Pending'
                             )} 
                             className="text-xs w-fit"
                           >
                             {app.postChangeStatus === 'completed' ? 'Completed' :
-                             app.postChangeStatus === 'not_applicable' ? 'N/A' : 'Pending'}
+                             app.postChangeStatus === 'in_progress' ? 'In Progress' : 'Pending'}
                           </Badge>
                         </td>
                         

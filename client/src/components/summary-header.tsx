@@ -63,9 +63,8 @@ export default function SummaryHeader({ changeRequests, isLoading }: SummaryHead
         allCompleted = false;
       }
 
-      // Check if not completed (excluding not_applicable which counts as complete)
-      if ((preStatus !== 'completed' && preStatus !== 'not_applicable') || 
-          (postStatus !== 'completed' && postStatus !== 'not_applicable')) {
+      // Check if not completed
+      if (preStatus !== 'completed' || postStatus !== 'completed') {
         allCompleted = false;
       }
     }

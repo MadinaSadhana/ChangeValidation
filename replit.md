@@ -159,10 +159,10 @@ Preferred communication style: Simple, everyday language.
 - **Overall Status Summary Header**: Enhanced summary cards showing total change requests and overall completion status:
   - **In Progress Status**: Change requests with validations currently being worked on (blue indicators)
   - **Pending Status**: Change requests with validations awaiting action (yellow indicators)  
-  - **Completed Status**: Change requests with all validations completed or marked not applicable (green indicators)
+  - **Completed Status**: Change requests with all validations completed (green indicators)
   - Total count display with color-coded status indicators and descriptive badges
 - **Overall Status Column**: New table column showing calculated overall status per change request:
-  - **Completed**: Only when ALL applications have both Pre and Post validations completed or marked not applicable
+  - **Completed**: Only when ALL applications have both Pre and Post validations completed
   - **In Progress**: When any application has validations currently in progress
   - **Pending**: When any application has validations awaiting action
   - Status is shown only on first row of each change request for clean display
@@ -182,9 +182,9 @@ Preferred communication style: Simple, everyday language.
   - **Fully Completed Change Requests**: CR-2025-001246 (Security Certificate Renewal), CR-2025-001249 (Legacy System Decommission)
   - **In-Progress Change Requests**: CR-2025-001247 (Database Migration), CR-2025-001250 (Emergency Performance Fix)
   - **Pending Change Requests**: CR-2025-001248 (Network Infrastructure Upgrade) - all validations awaiting start
-  - **Mixed Status Applications**: Realistic combinations of completed, in-progress, pending, and not applicable statuses
+  - **Mixed Status Applications**: Realistic combinations of completed, in-progress, and pending statuses
   - **Emergency Scenarios**: Active critical fixes with time-sensitive validations
-  - **Completed with N/A**: Applications where certain validations don't apply to specific systems
+  - **Diverse Validation States**: Applications demonstrating various completion and work-in-progress scenarios
 
 ### User Configuration
 - Primary user (45228804) configured as Change Manager role
