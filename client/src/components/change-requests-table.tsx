@@ -237,7 +237,7 @@ export default function ChangeRequestsTable({
         </CardHeader>
         <CardContent>
           <div className="overflow-x-auto max-w-full">
-            <table className="w-full divide-y divide-gray-200" style={{ minWidth: '1400px' }}>
+            <table className="w-full divide-y divide-gray-200" style={{ minWidth: '1200px' }}>
               <thead className="bg-gray-50">
                 <tr>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -248,12 +248,6 @@ export default function ChangeRequestsTable({
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     CR Description
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    CR Creation Date
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    CR Completion Date
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Overall Status
@@ -275,7 +269,7 @@ export default function ChangeRequestsTable({
               <tbody className="bg-white divide-y divide-gray-200">
                 {filteredRequests.length === 0 ? (
                   <tr>
-                    <td colSpan={11} className="px-6 py-8 text-center text-gray-500">
+                    <td colSpan={9} className="px-6 py-8 text-center text-gray-500">
                       No change requests found matching your criteria.
                     </td>
                   </tr>
@@ -295,14 +289,6 @@ export default function ChangeRequestsTable({
                           </td>
                           <td className="px-6 py-4">
                             <div className="text-sm text-gray-900">{request.title}</div>
-                          </td>
-                          <td className="px-6 py-4">
-                            <div className="text-xs text-gray-600">
-                              {format(new Date(request.createdAt), "MMM dd, yyyy")}
-                            </div>
-                          </td>
-                          <td className="px-6 py-4">
-                            <span className="text-xs text-gray-500">-</span>
                           </td>
                           <td className="px-6 py-4">
                             <Badge variant="outline" className="text-xs text-gray-500">
@@ -356,28 +342,7 @@ export default function ChangeRequestsTable({
                           )}
                         </td>
                         
-                        {/* CR Creation Date - only show on first row */}
-                        <td className="px-6 py-4">
-                          {index === 0 && (
-                            <div className="text-xs text-gray-600">
-                              {format(new Date(request.createdAt), "MMM dd, yyyy")}
-                            </div>
-                          )}
-                        </td>
-                        
-                        {/* CR Completion Date - only show on first row */}
-                        <td className="px-6 py-4">
-                          {index === 0 && (() => {
-                            const completionDate = getCompletionDate(request);
-                            return completionDate ? (
-                              <div className="text-xs text-green-600">
-                                {format(completionDate, "MMM dd, yyyy")}
-                              </div>
-                            ) : (
-                              <span className="text-xs text-gray-500">-</span>
-                            );
-                          })()}
-                        </td>
+
                         
                         {/* Overall Status - only show on first row */}
                         <td className="px-6 py-4">
