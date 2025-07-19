@@ -143,10 +143,19 @@ export const updateValidationSchema = createInsertSchema(changeRequestApplicatio
 // Types
 export type UpsertUser = z.infer<typeof insertUserSchema>;
 export type User = typeof users.$inferSelect;
-export type Application = typeof applications.$inferSelect;
+export type Application = typeof applications.$inferSelect & {
+  spoc?: {
+    id: string;
+    firstName: string | null;
+    lastName: string | null;
+    email: string | null;
+  } | null;
+};
 export type InsertApplication = z.infer<typeof insertApplicationSchema>;
 export type ChangeRequest = typeof changeRequests.$inferSelect;
 export type InsertChangeRequest = z.infer<typeof insertChangeRequestSchema>;
-export type ChangeRequestApplication = typeof changeRequestApplications.$inferSelect;
+export type ChangeRequestApplication = typeof changeRequestApplications.$inferSelect & {
+  application: Application;
+};
 export type InsertChangeRequestApplication = z.infer<typeof insertChangeRequestApplicationSchema>;
 export type UpdateValidation = z.infer<typeof updateValidationSchema>;

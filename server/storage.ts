@@ -168,30 +168,62 @@ export class DatabaseStorage implements IStorage {
 
   async getChangeRequestApplications(changeRequestId: number): Promise<ChangeRequestApplication[]> {
     const results = await db
-      .select()
+      .select({
+        // Change Request Application fields
+        cra_id: changeRequestApplications.id,
+        cra_applicationId: changeRequestApplications.applicationId,
+        cra_changeRequestId: changeRequestApplications.changeRequestId,
+        cra_preChangeStatus: changeRequestApplications.preChangeStatus,
+        cra_postChangeStatus: changeRequestApplications.postChangeStatus,
+        cra_preChangeComments: changeRequestApplications.preChangeComments,
+        cra_postChangeComments: changeRequestApplications.postChangeComments,
+        cra_preChangeAttachments: changeRequestApplications.preChangeAttachments,
+        cra_postChangeAttachments: changeRequestApplications.postChangeAttachments,
+        cra_preChangeUpdatedAt: changeRequestApplications.preChangeUpdatedAt,
+        cra_postChangeUpdatedAt: changeRequestApplications.postChangeUpdatedAt,
+        cra_createdAt: changeRequestApplications.createdAt,
+        // Application fields
+        app_id: applications.id,
+        app_name: applications.name,
+        app_description: applications.description,
+        app_spocId: applications.spocId,
+        app_createdAt: applications.createdAt,
+        // SPOC user fields
+        spoc_id: users.id,
+        spoc_firstName: users.firstName,
+        spoc_lastName: users.lastName,
+        spoc_email: users.email,
+      })
       .from(changeRequestApplications)
       .innerJoin(applications, eq(changeRequestApplications.applicationId, applications.id))
+      .leftJoin(users, eq(applications.spocId, users.id))
       .where(eq(changeRequestApplications.changeRequestId, changeRequestId));
 
     return results.map((result: any) => ({
-      id: result.change_request_applications.id,
-      applicationId: result.change_request_applications.applicationId,
-      changeRequestId: result.change_request_applications.changeRequestId,
-      preChangeStatus: result.change_request_applications.preChangeStatus,
-      postChangeStatus: result.change_request_applications.postChangeStatus,
-      preChangeComments: result.change_request_applications.preChangeComments,
-      postChangeComments: result.change_request_applications.postChangeComments,
-      preChangeAttachments: result.change_request_applications.preChangeAttachments,
-      postChangeAttachments: result.change_request_applications.postChangeAttachments,
-      preChangeUpdatedAt: result.change_request_applications.preChangeUpdatedAt,
-      postChangeUpdatedAt: result.change_request_applications.postChangeUpdatedAt,
-      createdAt: result.change_request_applications.createdAt,
+      id: result.cra_id,
+      applicationId: result.cra_applicationId,
+      changeRequestId: result.cra_changeRequestId,
+      preChangeStatus: result.cra_preChangeStatus,
+      postChangeStatus: result.cra_postChangeStatus,
+      preChangeComments: result.cra_preChangeComments,
+      postChangeComments: result.cra_postChangeComments,
+      preChangeAttachments: result.cra_preChangeAttachments,
+      postChangeAttachments: result.cra_postChangeAttachments,
+      preChangeUpdatedAt: result.cra_preChangeUpdatedAt,
+      postChangeUpdatedAt: result.cra_postChangeUpdatedAt,
+      createdAt: result.cra_createdAt,
       application: {
-        id: result.applications.id,
-        name: result.applications.name,
-        description: result.applications.description,
-        spocId: result.applications.spocId,
-        createdAt: result.applications.createdAt
+        id: result.app_id,
+        name: result.app_name,
+        description: result.app_description,
+        spocId: result.app_spocId,
+        createdAt: result.app_createdAt,
+        spoc: result.spoc_id ? {
+          id: result.spoc_id,
+          firstName: result.spoc_firstName,
+          lastName: result.spoc_lastName,
+          email: result.spoc_email
+        } : null
       }
     }));
   }
