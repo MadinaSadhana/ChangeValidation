@@ -107,12 +107,15 @@ export default function CreateChangeRequestModal({
   };
 
   const handleApplicationToggle = (applicationId: number, checked: boolean) => {
+    let newSelectedApplications: number[];
     if (checked) {
-      setSelectedApplications(prev => [...prev, applicationId]);
+      newSelectedApplications = [...selectedApplications, applicationId];
+      setSelectedApplications(newSelectedApplications);
     } else {
-      setSelectedApplications(prev => prev.filter(id => id !== applicationId));
+      newSelectedApplications = selectedApplications.filter(id => id !== applicationId);
+      setSelectedApplications(newSelectedApplications);
     }
-    form.setValue("applicationIds", selectedApplications);
+    form.setValue("applicationIds", newSelectedApplications);
   };
 
   // Generate auto-generated change ID for display

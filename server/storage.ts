@@ -29,6 +29,7 @@ export interface IStorage {
   getChangeRequests(filters?: any): Promise<ChangeRequest[]>;
   getChangeRequestById(id: number): Promise<ChangeRequest | undefined>;
   createChangeRequest(changeRequest: InsertChangeRequest): Promise<ChangeRequest>;
+  addApplicationsToChangeRequest(changeRequestId: number, applicationIds: number[]): Promise<void>;
   getChangeRequestApplications(changeRequestId: number): Promise<ChangeRequestApplication[]>;
   createChangeRequestApplication(cra: InsertChangeRequestApplication): Promise<ChangeRequestApplication>;
   updateChangeRequestApplicationStatus(
@@ -164,6 +165,19 @@ export class DatabaseStorage implements IStorage {
       .values(changeRequest)
       .returning();
     return newChangeRequest;
+  }
+
+  async addApplicationsToChangeRequest(changeRequestId: number, applicationIds: number[]): Promise<void> {
+    const changeRequestApplicationData = applicationIds.map(applicationId => ({
+      changeRequestId,
+      applicationId,
+      preChangeStatus: 'pending' as const,
+      postChangeStatus: 'pending' as const,
+    }));
+
+    await db
+      .insert(changeRequestApplications)
+      .values(changeRequestApplicationData);
   }
 
   async getChangeRequestApplications(changeRequestId: number): Promise<ChangeRequestApplication[]> {

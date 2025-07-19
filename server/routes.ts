@@ -239,7 +239,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(403).json({ message: "Only change managers can create change requests" });
       }
 
-      const { applicationIds, ...changeRequestData } = req.body;
+      const { applicationIds, startDateTime, endDateTime, ...changeRequestData } = req.body;
       
       // Generate change ID
       const now = new Date();
@@ -250,6 +250,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         ...changeRequestData,
         changeId,
         changeManagerId: userId,
+        startDateTime: new Date(startDateTime),
+        endDateTime: new Date(endDateTime),
       });
 
       const changeRequest = await storage.createChangeRequest(validatedData);
