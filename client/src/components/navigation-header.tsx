@@ -90,18 +90,18 @@ export default function NavigationHeader() {
             </div>
             <nav className="hidden md:flex space-x-8">
               <Link href="/">
-                <a className={`px-1 pb-4 text-sm font-medium transition-colors ${
+                <span className={`px-1 pb-4 text-sm font-medium transition-colors cursor-pointer ${
                   location === '/' 
                     ? 'text-primary border-b-2 border-primary' 
                     : 'text-gray-500 hover:text-gray-700'
                 }`}>
                   Dashboard
-                </a>
+                </span>
               </Link>
 
               {!isChangeManager && (
                 <Link href="/my-applications">
-                  <a className={`px-1 pb-4 text-sm font-medium transition-colors ${
+                  <span className={`px-1 pb-4 text-sm font-medium transition-colors cursor-pointer ${
                     location === '/my-applications' 
                       ? 'text-primary border-b-2 border-primary' 
                       : 'text-gray-500 hover:text-gray-700'

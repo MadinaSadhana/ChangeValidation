@@ -76,21 +76,36 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Application routes
   app.get('/api/applications', async (req: any, res) => {
     try {
+      let userId;
+      let user;
+
       // Check for simple login session first
       if ((req.session as any)?.user) {
         const sessionUser = (req.session as any).user;
-        const user = await storage.getUser(sessionUser.id);
-        if (!user) {
-          return res.status(401).json({ message: "Unauthorized" });
-        }
+        user = await storage.getUser(sessionUser.id);
+        userId = sessionUser.id;
       } else if (req.isAuthenticated() && req.user?.claims?.sub) {
-        const userId = req.user.claims.sub;
-        const user = await storage.getUser(userId);
+        userId = req.user.claims.sub;
+        user = await storage.getUser(userId);
+        
+        // If user doesn't exist in our database, create them from Replit auth
         if (!user) {
-          return res.status(401).json({ message: "Unauthorized" });
+          const { profile } = req.user;
+          user = await storage.upsertUser({
+            id: userId,
+            email: profile?.email || null,
+            firstName: profile?.name || profile?.firstName || null,
+            lastName: profile?.lastName || null,
+            profileImageUrl: profile?.image || null,
+            role: 'application_owner'
+          });
         }
       } else {
         return res.status(401).json({ message: "Unauthorized" });
+      }
+
+      if (!user) {
+        return res.status(401).json({ message: "User not found" });
       }
 
       const applications = await storage.getApplications();
