@@ -242,7 +242,7 @@ export default function CreateChangeRequestModal({
               <div className="border border-gray-300 rounded-lg p-4 max-h-48 overflow-y-auto">
                 {applicationsLoading ? (
                   <div className="text-center py-4">Loading applications...</div>
-                ) : applications && applications.length > 0 ? (
+                ) : applications && Array.isArray(applications) && applications.length > 0 ? (
                   <div className="space-y-3">
                     {applications.map((app: any) => (
                       <label key={app.id} className="flex items-start space-x-3">
