@@ -238,46 +238,79 @@ export default function ApplicationOwnerDashboard() {
       
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900">Application Owner Dashboard</h1>
-          <p className="text-gray-600 mt-2">Review and update validation statuses for your assigned applications</p>
+          <h1 className="text-3xl font-bold text-gray-900">Customer Portal Application</h1>
+          <p className="text-gray-600 mt-2">Assigned Change Requests</p>
         </div>
 
         <div className="space-y-6">
-          <h2 className="text-xl font-semibold text-gray-900">Assigned Change Requests</h2>
           
-          {!assignments || assignments.length === 0 ? (
-            <Card>
-              <CardContent className="py-8 text-center">
-                <FileText className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                <p className="text-gray-500">No change requests assigned to your applications</p>
-              </CardContent>
-            </Card>
-          ) : (
-            <div className="space-y-4">
-              {assignments.map((assignment: ChangeRequestApplication) => (
+          {/* Dummy data for now */}
+          <div className="space-y-4">
+            {[
+              {
+                id: 1,
+                changeRequestId: 'CR-2025-001001',
+                title: 'Payment System Security Update',
+                description: 'Critical security patches for payment processing modules',
+                changeType: 'P1',
+                startDateTime: '2025-01-22T14:00:00',
+                endDateTime: '2025-01-22T16:00:00',
+                applicationName: 'Customer Portal Application',
+                preChangeStatus: 'pending',
+                postChangeStatus: 'pending',
+                preChangeComments: null,
+                postChangeComments: null
+              },
+              {
+                id: 2,
+                changeRequestId: 'CR-2025-001002',
+                title: 'Customer Portal Performance Enhancement',
+                description: 'Optimize database queries and improve response times',
+                changeType: 'P2',
+                startDateTime: '2025-01-23T20:00:00',
+                endDateTime: '2025-01-23T22:00:00',
+                applicationName: 'Customer Portal Application',
+                preChangeStatus: 'in_progress',
+                postChangeStatus: 'pending',
+                preChangeComments: 'Performance baseline tests in progress',
+                postChangeComments: null
+              },
+              {
+                id: 3,
+                changeRequestId: 'CR-2025-001003',
+                title: 'Emergency SSL Certificate Renewal',
+                description: 'Urgent renewal of expiring SSL certificates',
+                changeType: 'Emergency',
+                startDateTime: '2025-01-21T23:00:00',
+                endDateTime: '2025-01-22T01:00:00',
+                applicationName: 'Customer Portal Application',
+                preChangeStatus: 'completed',
+                postChangeStatus: 'completed',
+                preChangeComments: 'SSL certificate validation completed',
+                postChangeComments: 'Post-change SSL connectivity verified successfully'
+              }
+            ].map((assignment: any) => (
                 <Card key={`${assignment.changeRequestId}-${assignment.applicationId}`}>
                   <CardContent className="p-6">
                     <div className="flex justify-between items-start mb-4">
                       <div className="flex-1">
                         <h3 className="text-lg font-semibold text-gray-900 mb-1">
-                          {assignment.changeRequest?.changeId || `CR-${assignment.changeRequestId}`}
+                          {assignment.changeRequestId}
                         </h3>
                         <p className="text-gray-600 mb-2">
-                          {assignment.changeRequest?.title || 'Change Request'}
+                          {assignment.title}
                         </p>
                         <div className="flex items-center gap-2 mb-3">
-                          {assignment.changeRequest?.changeType && getPriorityBadge(assignment.changeRequest.changeType)}
+                          {getPriorityBadge(assignment.changeType)}
                           <span className="text-sm text-gray-500">•</span>
                           <span className="text-sm font-medium text-gray-700">
-                            {assignment.application.name}
+                            {assignment.applicationName}
                           </span>
                         </div>
-                        {assignment.changeRequest?.startDateTime && (
-                          <p className="text-sm text-gray-500">
-                            <Calendar className="inline h-4 w-4 mr-1" />
-                            Scheduled: {format(new Date(assignment.changeRequest.startDateTime), 'MMM dd, yyyy HH:mm')}
-                          </p>
-                        )}
+                        <p className="text-sm text-gray-500">
+                          <Calendar className="inline h-4 w-4 mr-1" />
+                          Scheduled: {format(new Date(assignment.startDateTime), 'MMM dd, yyyy HH:mm')}
+                        </p>
                       </div>
                       <div className="flex flex-col items-end gap-2">
                         <Button
@@ -306,7 +339,6 @@ export default function ApplicationOwnerDashboard() {
                 </Card>
               ))}
             </div>
-          )}
         </div>
       </div>
 

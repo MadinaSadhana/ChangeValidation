@@ -254,7 +254,7 @@ export class DatabaseStorage implements IStorage {
   async createChangeRequestApplication(cra: InsertChangeRequestApplication): Promise<ChangeRequestApplication> {
     const [newCRA] = await db
       .insert(changeRequestApplications)
-      .values([cra])
+      .values(cra)
       .returning();
     
     // Get the full application details
@@ -537,24 +537,27 @@ export class DatabaseStorage implements IStorage {
     const updateData: any = {};
     
     if (validationData.type === 'pre') {
-      updateData.preChangeStatus = validationData.status;
-      updateData.preChangeComments = validationData.comments;
+      if (validationData.status) updateData.preChangeStatus = validationData.status;
+      if (validationData.comments !== undefined) updateData.preChangeComments = validationData.comments;
       updateData.preChangeUpdatedAt = new Date();
     } else if (validationData.type === 'post') {
-      updateData.postChangeStatus = validationData.status;
-      updateData.postChangeComments = validationData.comments;
+      if (validationData.status) updateData.postChangeStatus = validationData.status;
+      if (validationData.comments !== undefined) updateData.postChangeComments = validationData.comments;
       updateData.postChangeUpdatedAt = new Date();
     }
 
-    await db
-      .update(changeRequestApplications)
-      .set(updateData)
-      .where(
-        and(
-          eq(changeRequestApplications.changeRequestId, changeRequestId),
-          eq(changeRequestApplications.applicationId, applicationId)
-        )
-      );
+    // Only update if we have data to set
+    if (Object.keys(updateData).length > 0) {
+      await db
+        .update(changeRequestApplications)
+        .set(updateData)
+        .where(
+          and(
+            eq(changeRequestApplications.changeRequestId, changeRequestId),
+            eq(changeRequestApplications.applicationId, applicationId)
+          )
+        );
+    }
   }
 }
 
