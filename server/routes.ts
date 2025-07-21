@@ -385,7 +385,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(403).json({ message: "Access denied" });
       }
 
-      const stats = await storage.getChangeManagerStats(userId);
+      const stats = await storage.getChangeManagerStats();
       res.json(stats);
     } catch (error) {
       console.error("Error fetching change manager stats:", error);

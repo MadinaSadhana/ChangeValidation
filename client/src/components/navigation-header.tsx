@@ -107,7 +107,7 @@ export default function NavigationHeader() {
                       : 'text-gray-500 hover:text-gray-700'
                   }`}>
                     My Applications
-                  </a>
+                  </span>
                 </Link>
               )}
             </nav>

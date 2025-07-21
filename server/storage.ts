@@ -52,6 +52,15 @@ export interface IStorage {
     completed: number;
     total: number;
   }>;
+
+  // Additional operations for application owners
+  getChangeRequestApplicationsBySpoc(spocId: string): Promise<ChangeRequestApplication[]>;
+  updateValidationStatus(
+    changeRequestId: number, 
+    applicationId: number, 
+    spocId: string, 
+    validationData: any
+  ): Promise<void>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -118,10 +127,10 @@ export class DatabaseStorage implements IStorage {
     }
 
     if (conditions.length > 0) {
-      query = query.where(and(...conditions));
+      query = query.where(and(...conditions)) as any;
     }
 
-    query = query.orderBy(desc(changeRequests.createdAt));
+    query = query.orderBy(desc(changeRequests.createdAt)) as any;
 
     const results = await query;
     
@@ -245,7 +254,7 @@ export class DatabaseStorage implements IStorage {
   async createChangeRequestApplication(cra: InsertChangeRequestApplication): Promise<ChangeRequestApplication> {
     const [newCRA] = await db
       .insert(changeRequestApplications)
-      .values(cra)
+      .values([cra])
       .returning();
     
     // Get the full application details
@@ -389,11 +398,11 @@ export class DatabaseStorage implements IStorage {
           or(
             and(
               eq(changeRequestApplications.preChangeStatus, "completed"),
-              eq(changeRequestApplications.preChangeUpdatedAt, today)
+              sql`DATE(${changeRequestApplications.preChangeUpdatedAt}) = ${today}`
             ),
             and(
               eq(changeRequestApplications.postChangeStatus, "completed"),
-              eq(changeRequestApplications.postChangeUpdatedAt, today)
+              sql`DATE(${changeRequestApplications.postChangeUpdatedAt}) = ${today}`
             )
           )
         )
@@ -416,6 +425,88 @@ export class DatabaseStorage implements IStorage {
       completed: completed.count,
       total: total.count,
     };
+  }
+
+  // Additional operations for application owners
+  async getChangeRequestApplicationsBySpoc(spocId: string): Promise<ChangeRequestApplication[]> {
+    const results = await db
+      .select({
+        id: changeRequestApplications.id,
+        changeRequestId: changeRequestApplications.changeRequestId,
+        applicationId: changeRequestApplications.applicationId,
+        preChangeStatus: changeRequestApplications.preChangeStatus,
+        postChangeStatus: changeRequestApplications.postChangeStatus,
+        preChangeComments: changeRequestApplications.preChangeComments,
+        postChangeComments: changeRequestApplications.postChangeComments,
+        preChangeAttachments: changeRequestApplications.preChangeAttachments,
+        postChangeAttachments: changeRequestApplications.postChangeAttachments,
+        preChangeUpdatedAt: changeRequestApplications.preChangeUpdatedAt,
+        postChangeUpdatedAt: changeRequestApplications.postChangeUpdatedAt,
+        createdAt: changeRequestApplications.createdAt,
+        application: {
+          id: applications.id,
+          name: applications.name,
+          description: applications.description,
+          spocId: applications.spocId,
+          createdAt: applications.createdAt,
+        }
+      })
+      .from(changeRequestApplications)
+      .innerJoin(applications, eq(changeRequestApplications.applicationId, applications.id))
+      .innerJoin(changeRequests, eq(changeRequestApplications.changeRequestId, changeRequests.id))
+      .where(
+        and(
+          eq(applications.spocId, spocId),
+          eq(changeRequests.status, "active")
+        )
+      );
+
+    return results;
+  }
+
+  async updateValidationStatus(
+    changeRequestId: number, 
+    applicationId: number, 
+    spocId: string, 
+    validationData: any
+  ): Promise<void> {
+    // First verify that the user is the SPOC for this application
+    const [app] = await db
+      .select()
+      .from(applications)
+      .where(
+        and(
+          eq(applications.id, applicationId),
+          eq(applications.spocId, spocId)
+        )
+      );
+
+    if (!app) {
+      throw new Error("Unauthorized to update this application");
+    }
+
+    // Update the validation status
+    const updateData: any = {};
+    
+    if (validationData.type === 'pre') {
+      updateData.preChangeStatus = validationData.status;
+      updateData.preChangeComments = validationData.comments;
+      updateData.preChangeUpdatedAt = new Date();
+    } else if (validationData.type === 'post') {
+      updateData.postChangeStatus = validationData.status;
+      updateData.postChangeComments = validationData.comments;
+      updateData.postChangeUpdatedAt = new Date();
+    }
+
+    await db
+      .update(changeRequestApplications)
+      .set(updateData)
+      .where(
+        and(
+          eq(changeRequestApplications.changeRequestId, changeRequestId),
+          eq(changeRequestApplications.applicationId, applicationId)
+        )
+      );
   }
 }
 

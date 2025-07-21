@@ -69,8 +69,8 @@ export const changeRequestApplications = pgTable("change_request_applications", 
   postChangeStatus: varchar("post_change_status").notNull().default("pending"),
   preChangeComments: text("pre_change_comments"),
   postChangeComments: text("post_change_comments"),
-  preChangeAttachments: jsonb("pre_change_attachments").$type<string[]>().default([]),
-  postChangeAttachments: jsonb("post_change_attachments").$type<string[]>().default([]),
+  preChangeAttachments: jsonb("pre_change_attachments").$type<string[]>(),
+  postChangeAttachments: jsonb("post_change_attachments").$type<string[]>(),
   preChangeUpdatedAt: timestamp("pre_change_updated_at"),
   postChangeUpdatedAt: timestamp("post_change_updated_at"),
   createdAt: timestamp("created_at").defaultNow(),
@@ -152,7 +152,9 @@ export type Application = typeof applications.$inferSelect & {
   } | null;
 };
 export type InsertApplication = z.infer<typeof insertApplicationSchema>;
-export type ChangeRequest = typeof changeRequests.$inferSelect;
+export type ChangeRequest = typeof changeRequests.$inferSelect & {
+  applications?: ChangeRequestApplication[];
+};
 export type InsertChangeRequest = z.infer<typeof insertChangeRequestSchema>;
 export type ChangeRequestApplication = typeof changeRequestApplications.$inferSelect & {
   application: Application;
