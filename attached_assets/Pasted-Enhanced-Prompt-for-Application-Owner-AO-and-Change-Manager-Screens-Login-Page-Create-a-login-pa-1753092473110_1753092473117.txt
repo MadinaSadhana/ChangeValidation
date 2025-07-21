@@ -1,0 +1,71 @@
+Enhanced Prompt for Application Owner (AO) and Change Manager Screens
+Login Page
+Create a login page with the following features:
+Role Selection:
+Provide two roles for login: Change Manager and Application Owner.
+Use a dropdown or radio buttons to allow the user to select their role.
+Login Button:
+A single "Login" button that redirects the user based on the selected role:
+If the selected role is Change Manager, redirect to the Change Manager flow (existing screen).
+If the selected role is Application Owner, redirect to the AO dashboard (new screen described below).
+Application Owner (AO) Dashboard
+After logging in as Application Owner, the user is redirected to the AO dashboard. The dashboard should include the following:
+Change Request Details:
+
+Display the following information at the top of the dashboard:
+Title of the Change Request.
+Description of the Change Request.
+Change Manager details (e.g., name, contact information).
+Status Update Fields:
+
+Pre-Check Status:
+A checkbox for "Pass" or "Fail".
+A text area for "Remarks".
+Post-Check Status:
+A checkbox for "Pass" or "Fail".
+A text area for "Remarks".
+Submit Button:
+A button labeled "Submit" to save the status updates.
+Edit Functionality:
+
+If the status has already been submitted:
+Display the previously entered values in the fields.
+Allow the AO to edit the values (checkbox and remarks).
+Replace the "Submit" button with an "Update" button to save changes.
+Confirmation Pop-Up:
+
+After submitting or updating the status, display a pop-up message:
+Message: "Status has been successfully submitted."
+Include an "OK" button to close the pop-up.
+Change Manager Flow
+If the selected role during login is Change Manager, redirect the user to the existing Change Manager screen.
+Styling and Format
+Use the same styling and format as the Change Manager screens for consistency across both roles.
+Ensure the layout is clean and user-friendly:
+Place the Change Request details at the top of the AO dashboard.
+Position the status update fields below the Change Request details.
+Align the "Submit" or "Update" button centrally below the fields.
+Ensure the pop-up message is styled to match the application's overall theme.
+Example Flow
+Login Page:
+
+Provide a dropdown or radio buttons for role selection: Change Manager or Application Owner.
+Clicking "Login" redirects the user to the appropriate dashboard:
+Change Manager: Redirect to the existing Change Manager screen.
+Application Owner: Redirect to the AO dashboard.
+Application Owner Dashboard:
+
+Display the Change Request details at the top.
+Below that, provide the status update fields:
+Pre-Check Status (checkbox for pass/fail and remarks).
+Post-Check Status (checkbox for pass/fail and remarks).
+Include a "Submit" button for new updates or an "Update" button for editing existing entries.
+After Submission:
+
+Display a pop-up message: "Status has been successfully submitted."
+Include an "OK" button to close the pop-up.
+Re-login:
+
+When the AO logs in again, the previously entered values should be displayed in the fields.
+Allow the AO to edit the values if needed and save the changes.
+This enhanced prompt ensures a seamless experience for both roles, with tailored dashboards and functionality for each user type. The confirmation pop-up adds a layer of user feedback after submitting or updating the status.

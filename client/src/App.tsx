@@ -10,6 +10,7 @@ import Landing from "@/pages/landing";
 import Dashboard from "@/pages/dashboard";
 import ChangeRequestDetails from "@/pages/change-request-details";
 import ApplicationOwner from "@/pages/application-owner";
+import ApplicationOwnerDashboard from "@/pages/application-owner-dashboard";
 
 
 
@@ -35,7 +36,7 @@ function Router() {
         <>
           <Route path="/" component={Dashboard} />
           <Route path="/change-requests/:id" component={ChangeRequestDetails} />
-          <Route path="/my-applications" component={ApplicationOwner} />
+          <Route path="/my-applications" component={ApplicationOwnerDashboard} />
         </>
       )}
       <Route component={NotFound} />

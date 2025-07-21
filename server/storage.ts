@@ -443,17 +443,30 @@ export class DatabaseStorage implements IStorage {
         preChangeUpdatedAt: changeRequestApplications.preChangeUpdatedAt,
         postChangeUpdatedAt: changeRequestApplications.postChangeUpdatedAt,
         createdAt: changeRequestApplications.createdAt,
-        application: {
-          id: applications.id,
-          name: applications.name,
-          description: applications.description,
-          spocId: applications.spocId,
-          createdAt: applications.createdAt,
-        }
+        // Application fields
+        app_id: applications.id,
+        app_name: applications.name,
+        app_description: applications.description,
+        app_spocId: applications.spocId,
+        app_createdAt: applications.createdAt,
+        // Change Request fields
+        cr_id: changeRequests.id,
+        cr_changeId: changeRequests.changeId,
+        cr_title: changeRequests.title,
+        cr_description: changeRequests.description,
+        cr_changeType: changeRequests.changeType,
+        cr_startDateTime: changeRequests.startDateTime,
+        cr_endDateTime: changeRequests.endDateTime,
+        cr_changeManagerId: changeRequests.changeManagerId,
+        // Change Manager fields
+        cm_firstName: users.firstName,
+        cm_lastName: users.lastName,
+        cm_email: users.email,
       })
       .from(changeRequestApplications)
       .innerJoin(applications, eq(changeRequestApplications.applicationId, applications.id))
       .innerJoin(changeRequests, eq(changeRequestApplications.changeRequestId, changeRequests.id))
+      .leftJoin(users, eq(changeRequests.changeManagerId, users.id))
       .where(
         and(
           eq(applications.spocId, spocId),
@@ -461,7 +474,42 @@ export class DatabaseStorage implements IStorage {
         )
       );
 
-    return results;
+    return results.map((result: any) => ({
+      id: result.id,
+      changeRequestId: result.changeRequestId,
+      applicationId: result.applicationId,
+      preChangeStatus: result.preChangeStatus,
+      postChangeStatus: result.postChangeStatus,
+      preChangeComments: result.preChangeComments,
+      postChangeComments: result.postChangeComments,
+      preChangeAttachments: result.preChangeAttachments,
+      postChangeAttachments: result.postChangeAttachments,
+      preChangeUpdatedAt: result.preChangeUpdatedAt,
+      postChangeUpdatedAt: result.postChangeUpdatedAt,
+      createdAt: result.createdAt,
+      application: {
+        id: result.app_id,
+        name: result.app_name,
+        description: result.app_description,
+        spocId: result.app_spocId,
+        createdAt: result.app_createdAt,
+      },
+      changeRequest: {
+        id: result.cr_id,
+        changeId: result.cr_changeId,
+        title: result.cr_title,
+        description: result.cr_description,
+        changeType: result.cr_changeType,
+        startDateTime: result.cr_startDateTime,
+        endDateTime: result.cr_endDateTime,
+        changeManagerId: result.cr_changeManagerId,
+        changeManager: result.cm_firstName ? {
+          firstName: result.cm_firstName,
+          lastName: result.cm_lastName,
+          email: result.cm_email,
+        } : null,
+      }
+    }));
   }
 
   async updateValidationStatus(

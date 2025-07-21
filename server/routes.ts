@@ -13,27 +13,31 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Auth middleware
   await setupAuth(app);
 
-  // Simple login route for Change Managers
+  // Simple login route for both Change Managers and Application Owners
   app.post('/api/simple-login', async (req, res) => {
     try {
-      const { name } = req.body;
+      const { name, role } = req.body;
       if (!name || typeof name !== 'string' || !name.trim()) {
         return res.status(400).json({ message: "Name is required" });
       }
+      if (!role || !['change_manager', 'application_owner'].includes(role)) {
+        return res.status(400).json({ message: "Valid role is required" });
+      }
 
-      // Create a simple session for the change manager
-      const userId = `cm_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+      // Create a simple session for the user
+      const rolePrefix = role === 'change_manager' ? 'cm' : 'ao';
+      const userId = `${rolePrefix}_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
       const user = await storage.upsertUser({
         id: userId,
         email: null,
         firstName: name.trim(),
         lastName: null,
         profileImageUrl: null,
-        role: 'change_manager'
+        role: role
       });
 
       // Store user session
-      (req.session as any).user = { id: userId, role: 'change_manager' };
+      (req.session as any).user = { id: userId, role: role };
       res.json({ success: true, user });
     } catch (error) {
       console.error("Error during simple login:", error);
